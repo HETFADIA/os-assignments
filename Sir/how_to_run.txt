@@ -1,0 +1,4 @@
+gcc sir.c -lpthread -o ipc_demo
+//server created
+./ipc_demo server ./cs303_sock
+./ipc_demo client ./cs303_sock "heya"
