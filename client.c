@@ -14,54 +14,11 @@ typedef struct sockaddr_in IN;
 typedef struct sockaddr SA;
 
 
-void msg(char *msg, bool exit){
+void msg(char *msg, bool cond){
     printf("%s\n", msg);
-    if(exit) exit(-1);
+    if(cond) exit(-1);
 }
 
-void *func(void *p_client){
-    //client socket == *arg
-    int _client_socket = *((int *)p_client);
-    free(p_client);
-    char *USE = "Unsuccesful enqueue\n";
-    char *SE = "Succesful enqueue\n";
-    while(true){
-        char *request = (char *)malloc(sizeof(char) * 5001);
-        memset(request, '\0', sizeof request);
-        int _recv_status = recv(_client_socket, request, strlen(request), 0);
-        if(_recv_status < 0){
-            break;
-        }
-        pthread_mutex_lock(&mutex);
-        int enqueue_status = enqueue(request);
-        pthread_mutex_unlock(&mutex);
-        //mutex
-
-        if(enqueue_status < 0){
-            write(_client_socket, USE, strlen(USE));
-        }
-        else{
-            write(_client_socket, SE, strlen(SE));
-        }
-    }
-    pthread_mutex_lock(&mutex);
-    thread_count += 1;
-    pthread_mutex_unlock(&mutex);
-    //mutex
-    pthread_exit(NULL);
-    return NULL;
-}
-
-void *dispatcher_function(void *arg){
-    while(true){
-        char *request = dequeue();
-        if(request != NULL){
-           printf("%s\n", request);
-           free(request);
-        }
-    }
-    return NULL;
-}
 
 void make_server(int PORT){
 
@@ -79,10 +36,22 @@ void make_server(int PORT){
     if(_connect_status < 0) {
         msg("Connect failed", true);
     }
+    printf("Gaylmao\n");
     for(int i=0;i<10;i++){
-        char buff[500];
+        char buff[100];
+        memset(buff, '\0', sizeof(buff));
         strncpy(buff,"Hello World", sizeof(buff));
         write(_socket, buff, sizeof(buff));
+        printf("Sent msg\n");
+        int _recv_status = recv(_socket, buff, sizeof(buff), 0);
+        if(_recv_status<=0){
+            printf("Not received");
+            exit(-1);
+        }
+        for(int i=0;i<_recv_status;i++){
+            printf("b%cb", buff[i]);
+        }
+        printf("Received: %s, status: %d\n", buff, _recv_status);
     }
     
 }
