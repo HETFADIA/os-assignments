@@ -1,0 +1,4 @@
+hetfadia@hetfadia-VirtualBox:~$ gcc dld.c -ldl
+hetfadia@hetfadia-VirtualBox:~$ ./a.out
+-0.416147
+hetfadia@hetfadia-VirtualBox:~$ 
