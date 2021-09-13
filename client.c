@@ -43,15 +43,13 @@ void make_server(int PORT){
         strncpy(buff,"Hello World", sizeof(buff));
         write(_socket, buff, sizeof(buff));
         printf("Sent msg\n");
-        int _recv_status = recv(_socket, buff, sizeof(buff), 0);
-        if(_recv_status<=0){
-            printf("Not received");
-            exit(-1);
+        while(buff[0]!='#'){
+            int _recv_status = recv(_socket, buff, sizeof(buff), 0);
+            if(_recv_status<=0){
+                printf("Not received");
+                exit(-1);
+            }
         }
-        for(int i=0;i<_recv_status;i++){
-            printf("b%cb", buff[i]);
-        }
-        printf("Received: %s, status: %d\n", buff, _recv_status);
     }
     
 }
