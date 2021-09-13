@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include<stdlib.h>
 #include<string.h>
-void serialize(char * library_name,char * function_name,int library_name_size,int function_name_size){
+void _serialize(char * library_name,char * function_name,int library_name_size,int function_name_size){
 
     char  serialize[5001];
     int serializelen=0;
@@ -21,5 +21,5 @@ int main()
     
     char * a="include";
     char * b="function";
-    serialize(a,b,strlen(a),strlen(b));
+    _serialize(a,b,strlen(a),strlen(b));
 }
