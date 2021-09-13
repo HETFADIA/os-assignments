@@ -47,7 +47,7 @@ void _deserialize()
 {
     deserializelen = 0;
     int counter = 0;
-    
+    memset(deserialize,'\0',sizeof(deserialize));
     for (int i = 0; i<serializelen; i++)
     {
         if (serialize[i] == separator)
