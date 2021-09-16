@@ -80,25 +80,23 @@ int getusage()
 void DLL_handler_module(char *ch)
 {
 
-    if (!ch)
-        return;
-    char arr[10][501];
+    char arr[501][501];
+    int deserializelen = 0;
+    int counter = 0;
     memset(arr, '\0', sizeof(arr));
-    int i = 0, tot = 0;
-    while (true)
+    int serializelen = strlen(ch);
+    char separator = '#';
+    for (int i = 0; i < serializelen; i++)
     {
-        int j = 0;
-        while (ch[tot] != '\0' && ch[tot] != '#')
+        if (ch[i] == separator)
         {
-            arr[i][j] = ch[tot];
-            tot += 1;
-            j += 1;
+            deserializelen++;
+            counter = 0;
+            continue;
         }
-        i += 1;
-        if (ch[tot] == '\0')
-            break;
-        tot += 1;
+        arr[deserializelen][counter++] = ch[i];
     }
+    deserializelen++;
 
     double (*f1)(double);
     double (*f2)(double, double);
@@ -295,15 +293,15 @@ int main(int argc, char **argv)
     int a = atoi(argv[1]), b = atoi(argv[2]), c = atoi(argv[3]), d = atoi(argv[4]);
     if (b <= 0)
     {
-        printf("Error no threads available\n");
+        printf("\nError no threads available\n");
     }
-    else if (c < 3)
+    else if (c <= 4)
     {
-        printf("please provide as atleast 3 files must be specified\n");
+        printf("\nplease provide as atleast 5 files must be specified\n");
     }
     else if (d <= 6000)
     {
-        printf("Please increase the memory for the program\n");
+        printf("\nPlease increase the memory for the program\n");
     }
     else
     {
