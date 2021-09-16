@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-
+char separator = '?';
 #define LISTEN_BACKLOG 100
 #define MAX_QUEUE_SIZE 100
 #define MAX_REQUEST_THREADS 100
@@ -85,7 +85,7 @@ void DLL_handler_module(char *ch)
     int counter = 0;
     memset(arr, '\0', sizeof(arr));
     int serializelen = strlen(ch);
-    char separator = '#';
+    
     for (int i = 0; i < serializelen; i++)
     {
         if (ch[i] == separator)
@@ -153,8 +153,8 @@ void *func(void *p_client)
     char chararr[5001];
     int _client_socket = *((int *)p_client);
     free(p_client);
-    char *USE = "#";
-    char *SE = "#";
+    char *USE = "?";
+    char *SE = "?";
     printf("enqueuing client requests begins..\n");
 
     while (true)
