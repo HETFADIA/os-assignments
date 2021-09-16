@@ -28,21 +28,21 @@ int main(int argc, char **argv)
 
     else
     {
-        int port = atoi(argv[1]);
         int sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0)
         {
             printf("\nsocket could not be created\n");
             exit(-1);
         }
-        struct sockaddr_in server_addr, client_addr;
+        struct sockaddr_in s_adder;
 
-        server_addr.sin_family = AF_INET;
-        server_addr.sin_addr.s_addr = INADDR_ANY;
-        server_addr.sin_port = htons(port);
+        s_adder.sin_family = AF_INET;
+        s_adder.sin_addr.s_addr = INADDR_ANY;
+        int port = atoi(argv[1]);
+        s_adder.sin_port = htons(port);
 
-        int connected = connect(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
-        if (connected < 0)
+        bool connection_established = connect(sock, (struct sockaddr *)&s_adder, sizeof(struct sockaddr_in));
+        if (connection_established < 0)
         {
             printf("Connect could not be made\n");
             exit(-1);
@@ -64,27 +64,30 @@ int main(int argc, char **argv)
 
 
         fclose(fp);
+        /*
         printf("%d\n",i1);
         for(int j=0;j<i1;j++){
             printf("%s",str[j]);
         }
-        int strsize = 7;
+        */
+        int strsize = i1;
+        char *read_recieve = (char *)malloc(sizeof(char) * 201);
         for (int i = 0; i < strsize; i++)
         {
-            char *buff = (char *)malloc(sizeof(char) * 201);
+            memset(read_recieve,'\0',sizeof(read_recieve));
             write(sock, str[i], strlen(str[i]));
             printf("Sent msg %s\n", str[i]);
-            while (buff[0] != '?')
+            while (read_recieve[0] != '?')
             {
-                int _recv_status = recv(sock, buff, sizeof(buff), 0);
+                int _recv_status = recv(sock, read_recieve, sizeof(read_recieve), 0);
                 if (_recv_status <= 0)
                 {
-                    printf("\nNot received\n");
+                    printf("\nmessage not received\n");
                     exit(-1);
                 }
                 else
                 {
-                    printf("got the message\n");
+                    printf("\nreceived the message\n");
                 }
             }
         }
