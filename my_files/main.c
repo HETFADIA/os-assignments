@@ -103,8 +103,12 @@ void DLL_handler_module(char *ch)
         if (!handle)
         {
             int len = strlen(err);
-            if (err[len - 1] == 's' && err[len - 2] == 'e' && err[len - 3] == 'l' && err[len - 4] == 'i' && err[len - 5] == 'f')
+            bool many_files_open=err[len - 1] == 's' && err[len - 2] == 'e' && err[len - 3] == 'l' && err[len - 4] == 'i' && err[len - 5] == 'f';
+            if (many_files_open)
+            {
+
                 printf("Too many open files\n");
+            }
             else
             {
                 printf("%s\n", err);
@@ -194,9 +198,11 @@ void *func(void *p_client)
 
 void *dispatcher_function(void *arg)
 {
-    while (true)
+    while (1)
     {
-        if (getusage() > memlimit)
+        int memory_curr_used = getusage();
+        bool memory_more_used = memory_curr_used > memlimit;
+        if (memory_more_used)
         {
             printf("Memory limit exceeded\n");
             continue;
@@ -204,7 +210,7 @@ void *dispatcher_function(void *arg)
         pthread_mutex_lock(&mutex);
         char *request = dequeue();
         pthread_mutex_unlock(&mutex);
-        if (request != NULL)
+        if (request)
         {
             printf("%s\n", request);
             DLL_handler_module(request);
@@ -228,7 +234,7 @@ void make_server(int PORT, int thread_limit_dispatcher, int file_limit, int memo
     memlimit = memory_limit;
 
     pthread_t arr[thread_limit_dispatcher];
-    for (int i = 0; i < thread_limit_dispatcher; i += 1)
+    for (int i = 0; i < thread_limit_dispatcher; ++i)
     {
         pthread_create(&arr[i], NULL, dispatcher_function, NULL);
     }
