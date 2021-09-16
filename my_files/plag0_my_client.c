@@ -1,4 +1,5 @@
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,33 +55,43 @@ int main(int argc, char **argv)
         while (fgets(str2, 200, fp))
         {
             int str2len = strlen(str2);
-            str[i1] = (char *)malloc(sizeof(char) * (str2len));
+            str[i1] = (char *)malloc(sizeof(char) * (str2len + 1));
 
-            for (int j = 0; j < str2len; j++)
+            for (int j = 0; j <= str2len; j++)
             {
-                str[i1][j] = str2[j];
+                if (j < str2len)
+                {
+
+                    str[i1][j] = str2[j];
+                }
+                else
+                {
+                    str[i1][j] = '\0';
+                }
             }
+
             i1++;
         }
 
         fclose(fp);
         /*
-        printf("%d\n",i1);
-        for(int j=0;j<i1;j++){
-            printf("%s",str[j]);
-        }
         */
+        printf("%d\n", i1);
+        for (int j = 0; j < i1; j++)
+        {
+            printf("%s", str[j]);
+        }
         int strsize = i1;
         char *read_recieve = (char *)malloc(sizeof(char) * 201);
         for (int i = 0; i < strsize; i++)
         {
             memset(read_recieve, '\0', sizeof(read_recieve));
-            int strilen=strlen(str[i]);
+            int strilen = strlen(str[i]);
             write(sock, str[i], strilen);
-            printf("Sent msg %s\n", str[i]);
+            //printf("Sent msg %s\n", str[i]);
             while (read_recieve[0] != '?')
             {
-                
+
                 if (recv(sock, read_recieve, sizeof(read_recieve), 0) <= 0)
                 {
                     printf("\nmessage not received\n");
