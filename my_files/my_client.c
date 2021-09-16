@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,14 +47,34 @@ int main(int argc, char **argv)
             printf("Connect could not be made\n");
             exit(-1);
         }
-        char **str = (char *[]){"/lib/x86_64-linux-gnu/libm.so.6#cos#2", "/lib/x86_64-linux-gnu/libm.so.6#sin#1", "/lib/x86_64-linux-gnu/libm.so.6#ceil#2.5", "/lib/x86_64-linux-gnu/libm.so.6#sqrt#10", "/lib/x86_64-linux-gnu/libm.so.6#log10#5", "/lib/x86_64-linux-gnu/libm.so.6#pow#2#5", "/lib/x86_64-linux-gnu/libm.so.6#hypot#3#4"};
+        FILE * fp=fopen("input.txt","r");
+        char * str[1000];
+        char  str2[1000];
+        int i1=0;
+        while(fgets(str2, 200, fp)) {
+            int str2len=strlen(str2);
+            str[i1]=(char *)malloc(sizeof(char)*(str2len));
+
+            for(int j=0;j<str2len;j++){
+                    str[i1][j]=str2[j];
+
+            }
+            i1++;
+        }
+
+
+        fclose(fp);
+        printf("%d\n",i1);
+        for(int j=0;j<i1;j++){
+            printf("%s",str[j]);
+        }
         int strsize = 7;
         for (int i = 0; i < strsize; i++)
         {
             char *buff = (char *)malloc(sizeof(char) * 201);
             write(sock, str[i], strlen(str[i]));
             printf("Sent msg %s\n", str[i]);
-            while (buff[0] != '#')
+            while (buff[0] != '?')
             {
                 int _recv_status = recv(sock, buff, sizeof(buff), 0);
                 if (_recv_status <= 0)
