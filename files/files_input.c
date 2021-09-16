@@ -5,15 +5,15 @@
 int main()
 {
     FILE * fp=fopen("input.txt","r");
-    char * arr[1000];
-    char  arr2[1000];
+    char * str[1000];
+    char  str2[1000];
     int i=0;
-    while(fgets(arr2, 200, fp)) {
-        int arr2len=strlen(arr2);
-        arr[i]=(char *)malloc(sizeof(char)*(arr2len+1));
+    while(fgets(str2, 200, fp)) {
+        int str2len=strlen(str2);
+        str[i]=(char *)malloc(sizeof(char)*(str2len+1));
 
-        for(int j=0;j<arr2len;j++){
-                arr[i][j]=arr2[j];
+        for(int j=0;j<str2len;j++){
+                str[i][j]=str2[j];
 
         }
         i++;
@@ -23,7 +23,7 @@ int main()
     fclose(fp);
     printf("%d\n",i);
     for(int j=0;j<i;j++){
-        printf("%s",arr[j]);
+        printf("%s",str[j]);
     }
 
 }
