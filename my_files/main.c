@@ -1,20 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
+#include <sys/un.h>
 #include <unistd.h>
 #include <sys/socket.h>
-#include <sys/un.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <dlfcn.h>
 #include <sys/resource.h>
-#include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #define LISTEN_BACKLOG 100
 #define MAX_QUEUE_SIZE 100
@@ -98,8 +98,8 @@ void DLL_handler_module(char *ch)
     }
     deserializelen++;
 
-    double (*f1)(double);
-    double (*f2)(double, double);
+    
+    
     void *handle = NULL;
     char *err;
     while (handle == NULL)
@@ -118,28 +118,30 @@ void DLL_handler_module(char *ch)
             }
         }
     }
-    float result;
+    double result;
     if (strcmp(arr[1], "hypot") != 0 && strcmp(arr[1], "pow") != 0)
     {
+        double (*f1)(double);
         f1 = dlsym(handle, arr[1]);
         if (!f1)
         {
             printf("The requested function does not exist\n");
             return;
         }
-        float var1 = atof(arr[2]);
+        double var1 = atof(arr[2]);
         result = f1(var1);
     }
     else
     {
+        double (*f2)(double, double);
         f2 = dlsym(handle, arr[1]);
         if (!f2)
         {
             printf("The requested function does not exist\n");
             return;
         }
-        float var1 = atof(arr[2]);
-        float var2 = atof(arr[3]);
+        double var1 = atof(arr[2]);
+        double var2 = atof(arr[3]);
         result = f2(var1, var2);
     }
     printf("%f <- request response\n", result);
@@ -295,9 +297,9 @@ int main(int argc, char **argv)
     {
         printf("\nError no threads available\n");
     }
-    else if (c <= 4)
+    else if (c <= 5)
     {
-        printf("\nplease provide as atleast 5 files must be specified\n");
+        printf("\nplease provide as atleast 6 files must be specified\n");
     }
     else if (d <= 6000)
     {
