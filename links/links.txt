@@ -1,2 +1,3 @@
 https://docs.google.com/document/d/1HwkzR2R0WTaCYjlR_qTB6GVANBBpohcER90m3kTrHbU/edit
 https://tldp.org/HOWTO/Program-Library-HOWTO/dl-libraries.html
+https://www.ibm.com/docs/en/i/7.3?topic=extensions-standard-c-library-functions-table-by-name
