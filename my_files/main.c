@@ -25,46 +25,42 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 typedef struct sockaddr_in IN;
 typedef struct sockaddr SA;
 
-struct node
+char *queue[100];
+int start = 0;
+int end = 0;
+int qsize = 100;
+int currsize = 0;
+bool enqueue(char *s)
 {
-    char *data;
-    struct node *next;
-};
-
-int queue_size = 0;
-struct node *front = NULL;
-struct node *back = NULL;
-
-int enqueue(char *x)
-{
-    if (queue_size >= MAX_QUEUE_SIZE)
+    if (currsize >= qsize)
     {
-        return -1;
+        return 0;
     }
-    struct node *temp = (struct node *)malloc(sizeof(struct node));
-    temp->data = x;
-    temp->next = NULL;
-    if (back == NULL)
-        front = temp;
-    else
-        back->next = temp;
-    back = temp;
-    queue_size += 1;
-    return 0;
+    int slen = strlen(s);
+    queue[end] = (char *)malloc(sizeof(char) * (slen + 1));
+    for (int i = 0; i <= slen; i++)
+    {
+        if (i < slen)
+        {
+            queue[end][i] = s[i];
+        }
+        else
+        {
+            queue[end][i] = '\0';
+        }
+    }
+    end = (end + 1) % qsize;
+    currsize++;
+    return 1;
 }
 char *dequeue()
 {
-    if (front == NULL)
+    if (currsize == 0)
     {
         return NULL;
     }
-    struct node *temp = front;
-    front = front->next;
-    if (front == NULL)
-        back = NULL;
-    temp->next = NULL;
-    queue_size -= 1;
-    return temp->data;
+    currsize--;
+    return queue[(start++) % qsize];
 }
 
 int thread_count = 0;
@@ -85,7 +81,7 @@ void DLL_handler_module(char *ch)
     int counter = 0;
     memset(arr, '\0', sizeof(arr));
     int serializelen = strlen(ch);
-    
+
     for (int i = 0; i < serializelen; i++)
     {
         if (ch[i] == separator)
@@ -98,8 +94,6 @@ void DLL_handler_module(char *ch)
     }
     deserializelen++;
 
-    
-    
     void *handle = NULL;
     char *err;
     while (handle == NULL)
