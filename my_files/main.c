@@ -88,8 +88,10 @@ bool dll_handler_function(char *array_of_character)
     }
     // splits the library function name and arguments separated by ?
     char deserialize[501][501];
+    //length initialized at 0
     int deserializelen = 0;
     int counter = 0;
+    //initialize with '\0'
     memset(deserialize, '\0', sizeof(deserialize));
     int serializelen = strlen(array_of_character);
 
@@ -118,15 +120,18 @@ bool dll_handler_function(char *array_of_character)
         if (!handle)
         {
             int len = strlen(err);
-            bool many_files_open = 1;
+            bool many_files_open = 0;
 
             if (len >= 5)
             {
-
+                many_files_open=1;
+                // initially we assume that err[-5:]=="files"
                 for (int i = 0; i < 5; i++)
                 {
                     if (filesstr[i] != err[len - 5 + i])
                     {
+                        //if any of the character does not match means many files are not open
+                        // precisely if err[-5:]!="files" many files_open variable becomes 0
                         many_files_open = 0;
                     }
                 }
@@ -157,7 +162,7 @@ bool dll_handler_function(char *array_of_character)
             printf("The requested function does not exist\n");
             return 0;
         }
-
+        //calling the function
         result = function1(atof(deserialize[2]));
     }
     else if (deserializelen == 4)
@@ -182,7 +187,7 @@ bool dll_handler_function(char *array_of_character)
             printf("The requested function does not exist\n");
             return 0;
         }
-
+        //calling the function
         result = function1(atof(deserialize[2]), atof(deserialize[3]), atof(deserialize[4]));
     }
     else if (deserializelen == 6)
@@ -297,6 +302,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
         printf("\n the client accepted your request");
         printf("\n");
         pthread_mutex_lock(&mutex);
+        // we assign one thread below so thread counter should decrease by 1
         --threads_counter;
         pthread_mutex_unlock(&mutex);
         //mutex
@@ -314,6 +320,7 @@ void *request_server(void *p_client)
     char request_array[7000];
     int socket_accepted = *((int *)p_client);
     free(p_client);
+    //for sending to the clinet
     char *written = "?";
     printf("\n");
 
@@ -332,6 +339,7 @@ void *request_server(void *p_client)
         {
             request[i] = request_array[i];
         }
+        //sending the message back to the client
         printf("sending message to the client.\n");
         pthread_mutex_lock(&mutex);
         bool enqueue_status = enqueue(request);
@@ -380,6 +388,7 @@ int main(int argc, char **argv)
     int testinglen = strlen(testing);
     int argv1len = strlen(argv[1]);
     bool strequals = 1;
+    //equals 1 when argv1=="test"
     if (testinglen == argv1len)
     {
         // checking if it is for testing argv[1]=="test"
@@ -400,6 +409,7 @@ int main(int argc, char **argv)
     }
     if (strequals)
     {
+        //as it was testing part we return;
         return 0;
     }
     int a = atoi(argv[1]), b = atoi(argv[2]), c = atoi(argv[3]), d = atoi(argv[4]);
@@ -479,6 +489,7 @@ void queue_limit_checking()
             }
             else
             {
+                //the queue should be full after the 100th enqueue
                 printf("correct: queue size is full after 100 enqueue\n");
             }
         }
@@ -497,6 +508,7 @@ void check_dequeue()
     char *s = dequeue();
     if (s == NULL)
     {
+        //no element so the queue should be empty
         printf("Empty dequeue successful\n");
     }
     else
@@ -566,7 +578,9 @@ void checking_file_limit(){
 
 void unit_testing(int thread_limit, int open_file_limit, int memory_limit)
 {
+    //testing null string
     passing_empty_in_dll();
+    //testing incorrect path
     testing_incorrect_inputpath("error/lib/x86_64-linux-gnu/libm.so.6?cos?2");
     testing_incorrect_inputfunctionname("/lib/x86_64-linux-gnu/libm.so.6?errors?2");
 
