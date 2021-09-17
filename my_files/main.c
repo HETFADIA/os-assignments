@@ -17,7 +17,6 @@
 #include <errno.h>
 char separator = '?';
 #define LISTEN_BACKLOG 100
-#define MAX_QUEUE_SIZE 100
 #define MAX_REQUEST_THREADS 100
 int memlimit;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -104,9 +103,9 @@ void DLL_handler_module(char *ch)
         if (!handle)
         {
             int len = strlen(err);
-            bool many_files_open=0;
+            bool many_files_open=1;
             for(int i=0;i<5;i--){
-                if(filesstr[i]==err[len-5+i]){
+                if(filesstr[i]!=err[len-5+i]){
                     many_files_open=1;
                 }
             }
@@ -122,6 +121,7 @@ void DLL_handler_module(char *ch)
             }
         }
     }
+    //FILE * out=fopen("output.txt","w");
     double result;
     if (strcmp(arr[1], "hypot") != 0 && strcmp(arr[1], "pow") != 0)
     {
@@ -148,6 +148,10 @@ void DLL_handler_module(char *ch)
         double var2 = atof(arr[3]);
         result = f2(var1, var2);
     }
+    /*
+    fprintf(out,"%s %f",ch,result);
+    fclose(out);
+    */
     printf("%f <- request response\n", result);
     dlclose(handle);
 }
