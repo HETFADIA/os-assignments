@@ -62,8 +62,8 @@ Executing the main.c
 
 In the Terminal write
 gcc main.c -lpthread -ldl -o main
-./main.out [PORT] [Thread limit] [limit of the number of files that can be opened] [max_memory]
-Eg ./main.out 7000 10 10 10000
+./main [PORT] [Thread limit] [limit of the number of files that can be opened] [max_memory]
+Eg ./main 7000 10 10 10000
 
 
 Here the memory is in kbs
@@ -101,10 +101,10 @@ The program allows the following functions to be executed
 5. Testing
 To test the program write the following command in the terminal
 gcc main.c -lpthread -ldl -o main
-./main.out test [Thread limit] [limit of the number of files that can be opened] [max_memory]
+./main test [Thread limit] [limit of the number of files that can be opened] [max_memory]
 
 
-Eg ./main.out 7000 10 10 10000
+Eg ./main 7000 10 10 10000
 
 
 In the testing part, various checks have been done like passing the wrong function name, passing the wrong path.
