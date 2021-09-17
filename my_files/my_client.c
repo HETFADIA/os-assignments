@@ -57,7 +57,9 @@ int main(int argc, char **argv)
             exit(-1);
         }
         //taking the input from the input.txt as read file
+        //the input consists of the requests that will be given to the server
         FILE *fp = fopen("input.txt", "r");
+        //str[i] contains the ith request
         char *str[1000];
         char str2[1000];
         int i1 = 0;
@@ -75,13 +77,14 @@ int main(int argc, char **argv)
                 }
                 else
                 {
+                    //the last char shoudl be \0 for string
                     str[i1][j] = '\0';
                 }
             }
 
             i1++;
         }
-
+        //closing the file
         fclose(fp);
         /*
         */
@@ -104,16 +107,18 @@ int main(int argc, char **argv)
 
                     if (recv(sock, read_recieve, sizeof(read_recieve), 0) <= 0)
                     {
-                        printf("\nmessage not received\n");
+                        //we recieved the messaage from teh server
+                        printf("\nmessage not received from the server\n");
                         exit(-1);
                     }
                     else
                     {
                         //receive the mesasge from the server
-                        printf("\nreceived the message\n");
+                        printf("\nreceived message from the server\n");
                     }
                 }
             }
+            //close the socket
         close(sock);
     }
 }
