@@ -50,10 +50,10 @@ int main(int argc, char **argv)
         int port = atoi(argv[1]);
         s_adder.sin_port = htons(port);
 
-        bool connection_established = connect(sock, (struct sockaddr *)&s_adder, sizeof(struct sockaddr_in));
+        int connection_established = connect(sock, (struct sockaddr *)&s_adder, sizeof(struct sockaddr_in));
         if (connection_established < 0)
         {
-            printf("Connect could not be made\n");
+            printf("Connection could not be made\n");
             exit(-1);
         }
         //taking the input from the input.txt as read file
