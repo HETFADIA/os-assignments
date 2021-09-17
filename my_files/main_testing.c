@@ -415,7 +415,40 @@ void testing_correct_input(char * correct){
     printf("no error occured\n\n\n");
 }
 void opening_more_files(){
-    
+
+}
+void queue_limit_checking(){
+    printf("Test %d", ithtest++);
+    printf("\nQueue limit checking\n");
+    for(int i=1;i<=101;i++){
+        bool _enqueued=enqueue("hey");
+        if(_enqueued==0){
+            if(i!=101){
+                printf("error queue size full after %d enqueue\n",i);
+                return ;
+            }
+            else{
+                printf("correct: queue size is full after 100 enqueue\n");
+            }
+        }
+    }
+    for(int i=1;i<=100;i++){
+        dequeue();
+    }
+    printf("no error occured\n\n\n");
+}
+void check_dequeue(){
+    printf("Test %d", ithtest++);
+    printf("\nDequeueing empty queue\n");
+    char * s=dequeue();
+    if(s==NULL){
+        printf("Empty dequeue successful\n");
+    }
+    else{
+        printf("Error occured");
+        return;
+    }
+    printf("no error occured\n\n\n");
 }
 void unit_testing(int thread_limit, int open_file_limit, int memory_limit)
 {
@@ -424,5 +457,6 @@ void unit_testing(int thread_limit, int open_file_limit, int memory_limit)
     testing_incorrect_inputfunctionname("/lib/x86_64-linux-gnu/libm.so.6?errors?2");
     //testing_incorrect_inputfunctionname("/lib/x86_64-linux-gnu/libm.so.6?cos?a?b");
     testing_correct_input("/lib/x86_64-linux-gnu/libm.so.6?tan?2");
-
+    queue_limit_checking();
+    check_dequeue();
 }
