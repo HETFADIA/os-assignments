@@ -100,7 +100,7 @@ bool DLL_handler_module(char *ch)
         arr[deserializelen][counter++] = ch[i];
     }
     deserializelen++;
-    
+
     void *handle = NULL;
     char *err;
     char *filesstr = "files";
@@ -108,12 +108,12 @@ bool DLL_handler_module(char *ch)
     {
         handle = dlopen(arr[0], RTLD_LAZY);
         err = dlerror();
-        
+
         if (!handle)
         {
             int len = strlen(err);
             bool many_files_open = 1;
-            
+
             if (len >= 5)
             {
 
@@ -125,7 +125,7 @@ bool DLL_handler_module(char *ch)
                     }
                 }
             }
-            
+
             if (many_files_open)
             {
 
@@ -138,10 +138,10 @@ bool DLL_handler_module(char *ch)
             }
         }
     }
-    
+
     //FILE * out=fopen("output.txt","w");
     double result;
-    if (strcmp(arr[1], "hypot") != 0 && strcmp(arr[1], "pow") != 0)
+    if (deserializelen == 3)
     {
         double (*f1)(double);
         f1 = dlsym(handle, arr[1]);
@@ -153,7 +153,7 @@ bool DLL_handler_module(char *ch)
         double var1 = atof(arr[2]);
         result = f1(var1);
     }
-    else
+    else if (deserializelen == 4)
     {
         double (*f2)(double, double);
         f2 = dlsym(handle, arr[1]);
@@ -165,6 +165,20 @@ bool DLL_handler_module(char *ch)
         double var1 = atof(arr[2]);
         double var2 = atof(arr[3]);
         result = f2(var1, var2);
+    }
+    else if (deserializelen == 5)
+    {
+        double (*f3)(double, double, double);
+        f3 = dlsym(handle, arr[1]);
+        if (!f3)
+        {
+            printf("The requested function does not exist\n");
+            return 0;
+        }
+        double var1 = atof(arr[2]);
+        double var2 = atof(arr[3]);
+        double var3 = atof(arr[4]);
+        result = f3(var1, var2, var3);
     }
     /*
     fprintf(out,"%s %f",ch,result);
@@ -388,13 +402,14 @@ void passing_empty_in_dll()
 }
 void testing_incorrect_inputpath(char *incorrect)
 {
-    
+
     printf("Test %d", ithtest++);
     printf("\nTesting incorrect path\n");
     DLL_handler_module(incorrect);
     printf("no error occured\n\n\n");
 }
-void testing_incorrect_inputfunctionname(char * incorrect){
+void testing_incorrect_inputfunctionname(char *incorrect)
+{
     printf("Test %d", ithtest++);
     printf("\nTesting incorrect function name\n");
     DLL_handler_module(incorrect);
@@ -408,50 +423,62 @@ void testing_incorrect_arguments(char * incorrect){
     printf("\n\n");
 }
 */
-void testing_correct_input(char * correct){
+void testing_correct_input(char *correct)
+{
     printf("Test %d", ithtest++);
     printf("\nTesting correct function name\n");
     DLL_handler_module(correct);
     printf("no error occured\n\n\n");
 }
-void opening_more_files(){
-
+void opening_more_files()
+{
 }
-void queue_limit_checking(){
+void queue_limit_checking()
+{
     printf("Test %d", ithtest++);
     printf("\nQueue limit checking\n");
-    for(int i=1;i<=101;i++){
-        bool _enqueued=enqueue("hey");
-        if(_enqueued==0){
-            if(i!=101){
-                printf("error queue size full after %d enqueue\n",i);
-                return ;
+    for (int i = 1; i <= 101; i++)
+    {
+        bool _enqueued = enqueue("hey");
+        if (_enqueued == 0)
+        {
+            if (i != 101)
+            {
+                printf("error queue size full after %d enqueue\n", i);
+                return;
             }
-            else{
+            else
+            {
                 printf("correct: queue size is full after 100 enqueue\n");
             }
         }
     }
-    for(int i=1;i<=100;i++){
+    for (int i = 1; i <= 100; i++)
+    {
         dequeue();
     }
     printf("no error occured\n\n\n");
 }
-void check_dequeue(){
+void check_dequeue()
+{
     printf("Test %d", ithtest++);
     printf("\nDequeueing empty queue\n");
-    char * s=dequeue();
-    if(s==NULL){
+    char *s = dequeue();
+    if (s == NULL)
+    {
         printf("Empty dequeue successful\n");
     }
-    else{
+    else
+    {
         printf("Error occured");
         return;
     }
-    for(int i=0;i<1000;i++){
-        bool en=enqueue("hey");
-        char * deq=dequeue();
-        if(en==0 || deq==NULL){
+    for (int i = 0; i < 1000; i++)
+    {
+        bool en = enqueue("hey");
+        char *deq = dequeue();
+        if (en == 0 || deq == NULL)
+        {
             printf("error\n");
         }
     }
