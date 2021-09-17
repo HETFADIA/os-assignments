@@ -448,6 +448,14 @@ void check_dequeue(){
         printf("Error occured");
         return;
     }
+    for(int i=0;i<1000;i++){
+        bool en=enqueue("hey");
+        char * deq=dequeue();
+        if(en==0 || deq==NULL){
+            printf("error\n");
+        }
+    }
+    printf("no error in 1000 enqueue dequeue\n");
     printf("no error occured\n\n\n");
 }
 void unit_testing(int thread_limit, int open_file_limit, int memory_limit)
