@@ -15,18 +15,19 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+//separator <dll>separator <function name> separator <arguments>
 char separator = '?';
 
-int max_threads= 100;
+int max_threads = 100;
 int max_memory_limit;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-
+//making array based queue
 char *queue[100];
 int start = 0;
 int end = 0;
 int qsize = 100;
 int currsize = 0;
+//enqueue in the cirucular based queue
 bool enqueue(char *s)
 {
     if (currsize >= qsize)
@@ -34,6 +35,7 @@ bool enqueue(char *s)
         return 0;
     }
     int slen = strlen(s);
+    // queue[end] sotres the s
     queue[end] = (char *)malloc(sizeof(char) * (slen + 1));
     for (int i = 0; i <= slen; i++)
     {
@@ -50,16 +52,18 @@ bool enqueue(char *s)
     currsize++;
     return 1;
 }
+//dequeue the request from the circular array based queue
 char *dequeue()
 {
     if (currsize == 0)
     {
+        //queue size is 0 so it is empty
         return NULL;
     }
     currsize--;
     return queue[(start++) % qsize];
 }
-
+//counter of the threads
 int threads_counter = 0;
 
 void *request_server(void *p_client);
@@ -69,6 +73,7 @@ void *dispatcher_of_thread(void *arg);
 
 int get_memory_usage()
 {
+    //gives the memory usage of the program
     struct rusage usage;
     int who = RUSAGE_SELF;
     getrusage(who, &usage);
@@ -81,6 +86,7 @@ bool dll_handler_function(char *array_of_character)
     {
         return 0;
     }
+    // splits the library function name and arguments separated by ?
     char deserialize[501][501];
     int deserializelen = 0;
     int counter = 0;
@@ -89,6 +95,7 @@ bool dll_handler_function(char *array_of_character)
 
     for (int i = 0; i < serializelen; i++)
     {
+        //splitting it at separator
         if (array_of_character[i] == separator)
         {
             deserializelen++;
@@ -126,7 +133,7 @@ bool dll_handler_function(char *array_of_character)
 
             if (many_files_open)
             {
-
+                //too many files are open so we leave
                 printf("Too many open files\n");
             }
             else
@@ -141,6 +148,7 @@ bool dll_handler_function(char *array_of_character)
     double result;
     if (deserializelen == 3)
     {
+        //length is 3 so library  funciton name and funciton arugment (only one argumetn)
         double (*function1)(double);
         function1 = dlsym(handle, deserialize[1]);
         if (!function1)
@@ -160,6 +168,7 @@ bool dll_handler_function(char *array_of_character)
             printf("The requested function does not exist\n");
             return 0;
         }
+        //calling the function
         result = function1(atof(deserialize[2]), atof(deserialize[3]));
     }
     else if (deserializelen == 5)
@@ -174,15 +183,17 @@ bool dll_handler_function(char *array_of_character)
 
         result = function1(atof(deserialize[2]), atof(deserialize[3]), atof(deserialize[4]));
     }
-    else if(deserializelen == 6){
-        double (*function1)(double, double, double,double);
+    else if (deserializelen == 6)
+    {
+        double (*function1)(double, double, double, double);
         function1 = dlsym(handle, deserialize[1]);
         if (!function1)
         {
             printf("The requested function does not exist\n");
             return 0;
         }
-        result = function1(atof(deserialize[2]), atof(deserialize[3]), atof(deserialize[4]),atof(deserialize[5]));
+        //calling teh function
+        result = function1(atof(deserialize[2]), atof(deserialize[3]), atof(deserialize[4]), atof(deserialize[5]));
     }
 
     printf("%f is obtained as the responce of the request\n", result);
@@ -196,12 +207,14 @@ void *dispatcher_of_thread(void *arg)
     {
         int memory_curr_used = get_memory_usage();
         bool memory_more_used = memory_curr_used > max_memory_limit;
+        //if memory is more we wait for the memory to get freed up
         if (memory_more_used)
         {
             printf("Memory limit exceeded\n");
             continue;
         }
         pthread_mutex_lock(&mutex);
+        //as deuqueue contians global variables we have to execute it in mutex
         char *request = dequeue();
         pthread_mutex_unlock(&mutex);
         if (!request)
@@ -228,7 +241,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
         fprintf(stderr, "%s\n", strerror(errno));
         exit(-1);
     }
-
+    // making the thread pool
     pthread_t thread_pool[thread_maxlimit];
     max_memory_limit = memory_limit;
 
@@ -251,11 +264,13 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     server_addr.sin_port = htons(PORT);
 
     int _bind_status = bind(_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
+    //chekcing the bind status
     if (_bind_status < 0)
     {
         printf("\nthe bind could not be done\n");
     }
     int _listen_status = listen(_socket, 100);
+    //chekcing the listen status
     if (_listen_status < 0)
     {
         printf("\nlisten was not successful\n");
@@ -294,7 +309,7 @@ void *request_server(void *p_client)
     free(p_client);
     char *written = "?";
     printf("\n");
-    
+
     while (1)
     {
 
@@ -317,9 +332,9 @@ void *request_server(void *p_client)
         //mutex
 
         write(socket_accepted, written, sizeof(written));
-        
     }
     pthread_mutex_lock(&mutex);
+    //as it is golbal pointer we have to execute it in mutex
     ++threads_counter;
     pthread_mutex_unlock(&mutex);
 
@@ -330,6 +345,16 @@ void *request_server(void *p_client)
 void unit_testing(int thread_limit, int open_file_limit, int memory_limit);
 int main(int argc, char **argv)
 {
+    // to run the program
+    /*
+    gcc main.c -lpthread -ldl -o main
+    ./main.out [PORT] [Thread limit] [limit of the number of files that can be opened] [max_memory]
+    */
+    // to run test use
+    /*
+    gcc main.c -lpthread -ldl
+    ./a.out test [Thread limit] [limit of the number of files that can be opened] [max_memory]
+   */
     if (argc < 5)
     {
         printf("\nToo less arguments\n");
@@ -350,7 +375,7 @@ int main(int argc, char **argv)
     bool strequals = 1;
     if (testinglen == argv1len)
     {
-
+        // checking if it is for testing argv[1]=="test"
         for (int i = 0; i < 4; i++)
         {
             if (argv[1][i] != testing[i])
@@ -372,25 +397,31 @@ int main(int argc, char **argv)
     int a = atoi(argv[1]), b = atoi(argv[2]), c = atoi(argv[3]), d = atoi(argv[4]);
     if (b <= 0)
     {
+        //need at least one thread
         printf("\nError no threads available\n");
     }
     else if (c <= 5)
     {
+        //chekcing if there are enough files
+        //three files are initially open namley stdin,stdout,stderr
+        //another file is establised on connection with the clinet
         printf("\nplease provide as atleast 6 files \n");
     }
     else if (d <= 6000)
     {
+        //need at least 6 MB memory to funciton smoothly
         printf("\nPlease increase the memory for the program\n");
     }
     else
     {
-
+        //if all conditions are met we start the server
         make_server(a, b, c, d);
     }
 }
 int ithtest = 1;
 void passing_empty_in_dll()
 {
+    //testing the program when empty string is given
     printf("Test %d", ithtest++);
     printf("\ncalling handler module with empty string\n");
     dll_handler_function(NULL);
@@ -399,7 +430,7 @@ void passing_empty_in_dll()
 }
 void testing_incorrect_inputpath(char *incorrect)
 {
-
+    //testing the program on the incorrect input
     printf("Test %d", ithtest++);
     printf("\nTesting incorrect path\n");
     dll_handler_function(incorrect);
@@ -407,21 +438,16 @@ void testing_incorrect_inputpath(char *incorrect)
 }
 void testing_incorrect_inputfunctionname(char *incorrect)
 {
+    //testing the program on the incorrect input
     printf("Test %d", ithtest++);
     printf("\nTesting incorrect function name\n");
     dll_handler_function(incorrect);
     printf("no error occured\n\n\n");
 }
-/*
-void testing_incorrect_arguments(char * incorrect){
-    printf("Test %d", ithtest++);
-    printf("\nTesting incorrect arguments name\n");
-    dll_handler_function(incorrect);
-    printf("\n\n");
-}
-*/
+
 void testing_correct_input(char *correct)
 {
+    //testing the program on correct input
     printf("Test %d", ithtest++);
     printf("\nTesting correct function name\n");
     dll_handler_function(correct);
@@ -430,6 +456,7 @@ void testing_correct_input(char *correct)
 
 void queue_limit_checking()
 {
+    //checking what happens on 101 enqueue
     printf("Test %d", ithtest++);
     printf("\nQueue limit checking\n");
     for (int i = 1; i <= 101; i++)
@@ -456,6 +483,7 @@ void queue_limit_checking()
 }
 void check_dequeue()
 {
+    //checing the dqueue status
     printf("Test %d", ithtest++);
     printf("\nDequeueing empty queue\n");
     char *s = dequeue();
@@ -480,14 +508,69 @@ void check_dequeue()
     printf("no error in 1000 enqueue dequeue\n");
     printf("no error occured\n\n\n");
 }
+void checking_file_limit(){
+    printf("Test %d", ithtest++);
+    struct rlimit lim;
+    lim.rlim_cur = 3;
+    printf("\nFile limit set to 3\n");
+    lim.rlim_max = 1024;
+    bool not_possible = (setrlimit(RLIMIT_NOFILE, &lim) == -1);
+    struct rlimit new_lim;
+
+    if (not_possible)
+    {
+        fprintf(stderr, "%s\n", strerror(errno));
+        exit(-1);
+    }
+    FILE * fp= fopen("input3.txt","w");
+    if(fp==NULL){
+        //as the file limit was 3 we could not open this file
+        //so it is successful
+        printf("\nsuccessful: could not open the fourth file as the file open limit is 3\n");
+    }
+    else{
+        printf("\nfailure\n");
+        return;
+    }
+    
+    lim.rlim_cur = 4;
+    printf("\nFile limit set to 4\n");
+    FILE * fp2= fopen("input2.txt","w");
+    if(fp2==NULL){
+        printf("\nsuccessful: could not open the 5th file as the file open limit is 4\n");
+    }
+    else{
+        printf("Error occured");
+    }
+    
+
+    printf("no error occured\n\n\n");
+}
+
 void unit_testing(int thread_limit, int open_file_limit, int memory_limit)
 {
     passing_empty_in_dll();
     testing_incorrect_inputpath("error/lib/x86_64-linux-gnu/libm.so.6?cos?2");
     testing_incorrect_inputfunctionname("/lib/x86_64-linux-gnu/libm.so.6?errors?2");
-    //testing_incorrect_inputfunctionname("/lib/x86_64-linux-gnu/libm.so.6?cos?a?b");
+
     testing_correct_input("/lib/x86_64-linux-gnu/libm.so.6?tan?2");
-    //opening_more_files(open_file_limit);
     queue_limit_checking();
     check_dequeue();
+    checking_file_limit();
 }
+
+
+// to run the program
+    /*
+    gcc main.c -lpthread -ldl -o main
+    ./main.out [PORT] [Thread limit] [limit of the number of files that can be opened] [max_memory]
+    */
+
+
+    // to run test use
+
+
+    /*
+    gcc main.c -lpthread -ldl
+    ./a.out test [Thread limit] [limit of the number of files that can be opened] [max_memory]
+   */
