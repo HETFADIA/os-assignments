@@ -96,6 +96,7 @@ void DLL_handler_module(char *ch)
 
     void *handle = NULL;
     char *err;
+    char * filesstr="files";
     while (handle == NULL)
     {
         handle = dlopen(arr[0], RTLD_LAZY);
@@ -103,7 +104,12 @@ void DLL_handler_module(char *ch)
         if (!handle)
         {
             int len = strlen(err);
-            bool many_files_open = err[len - 1] == 's' && err[len - 2] == 'e' && err[len - 3] == 'l' && err[len - 4] == 'i' && err[len - 5] == 'f';
+            bool many_files_open=0;
+            for(int i=0;i<5;i--){
+                if(filesstr[i]==err[len-5+i]){
+                    many_files_open=1;
+                }
+            }
             if (many_files_open)
             {
 
@@ -146,7 +152,7 @@ void DLL_handler_module(char *ch)
     dlclose(handle);
 }
 
-void *func(void *p_client)
+void *request_server(void *p_client)
 {
     char chararr[5001];
     char *request = (char *)malloc(sizeof(char) * 5001);
@@ -155,30 +161,29 @@ void *func(void *p_client)
     char *USE = "?", *SE = "?";
     printf("\n");
     printf("enqueuing client requests begins..\n");
-    while (true)
+    while (1)
     {
-        //read the requests from a client one by one and start queuing them up for the dispatcher
 
         
         memset(request, '\0', sizeof(char) * 5001);
         memset(chararr, '\0', sizeof(chararr));
         int _recv_status = recv(_client_socket, chararr, sizeof(chararr), 0);
+        if (_recv_status <= 0)
+        {
+            break;
+        }
         int chararrlen=strlen(chararr);
         for (int i = 0; i < chararrlen; i++)
         {
             request[i] = chararr[i];
         }
-        if (_recv_status <= 0)
-        {
-            break;
-        }
         pthread_mutex_lock(&mutex);
-        int enqueue_status = enqueue(request);
+        bool enqueue_status = enqueue(request);
         pthread_mutex_unlock(&mutex);
         //mutex
 
         printf("sending response about succesful or unsuccesful enqueue back to the client.\n");
-        if (enqueue_status < 0)
+        if (enqueue_status == 0)
         {
             write(_client_socket, USE, sizeof(USE));
         }
@@ -188,9 +193,9 @@ void *func(void *p_client)
         }
     }
     pthread_mutex_lock(&mutex);
-    thread_count += 1;
+    ++thread_count;
     pthread_mutex_unlock(&mutex);
-    //mutex
+
     close(_client_socket);
     pthread_exit(NULL);
     return NULL;
@@ -277,14 +282,14 @@ void make_server(int PORT, int thread_limit_dispatcher, int openfile_limit, int 
         printf("\n the client accepted your request");
         printf("\n");
         pthread_mutex_lock(&mutex);
-        thread_count -= 1;
+        --thread_count;
         pthread_mutex_unlock(&mutex);
         //mutex
 
-        pthread_t t;
+        pthread_t new_thread;
         int *p_client = (int *)malloc(sizeof(int));
         *p_client = _client_socket;
-        pthread_create(&t, NULL, func, p_client);
+        pthread_create(&new_thread, NULL, request_server, p_client);
     }
 }
 
