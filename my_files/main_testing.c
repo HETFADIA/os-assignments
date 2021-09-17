@@ -21,7 +21,6 @@ char separator = '?';
 int memlimit;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-
 typedef struct sockaddr SA;
 
 char *queue[100];
@@ -150,33 +149,43 @@ bool dll_handler_function(char *array_of_character)
             printf("The requested function does not exist\n");
             return 0;
         }
-    
+
         result = function1(atof(deserialize[2]));
     }
     else if (deserializelen == 4)
     {
-        double (*function2)(double, double);
-        function2 = dlsym(handle, deserialize[1]);
-        if (!function2)
+        double (*function1)(double, double);
+        function1 = dlsym(handle, deserialize[1]);
+        if (!function1)
         {
             printf("The requested function does not exist\n");
             return 0;
         }
-        result = function2(atof(deserialize[2]), atof(deserialize[3]));
+        result = function1(atof(deserialize[2]), atof(deserialize[3]));
     }
     else if (deserializelen == 5)
     {
-        double (*function3)(double, double, double);
-        function3 = dlsym(handle, deserialize[1]);
-        if (!function3)
+        double (*function1)(double, double, double);
+        function1 = dlsym(handle, deserialize[1]);
+        if (!function1)
         {
             printf("The requested function does not exist\n");
             return 0;
         }
-        
-        result = function3(atof(deserialize[2]), atof(deserialize[3]),atof(deserialize[4]));
+
+        result = function1(atof(deserialize[2]), atof(deserialize[3]), atof(deserialize[4]));
     }
-    
+    else if(deserializelen == 6){
+        double (*function1)(double, double, double,double);
+        function1 = dlsym(handle, deserialize[1]);
+        if (!function1)
+        {
+            printf("The requested function does not exist\n");
+            return 0;
+        }
+        result = function1(atof(deserialize[2]), atof(deserialize[3]), atof(deserialize[4]),atof(deserialize[5]));
+    }
+
     printf("%f is obtained as the responce of the request\n", result);
     dlclose(handle);
     return 1;
@@ -196,11 +205,12 @@ void *dispatcher_of_thread(void *arg)
         pthread_mutex_lock(&mutex);
         char *request = dequeue();
         pthread_mutex_unlock(&mutex);
-        if (request)
+        if (!request)
         {
-            printf("%s\n", request);
-            dll_handler_function(request);
+            continue;
         }
+        printf("%s\n", request);
+        dll_handler_function(request);
     }
     return NULL;
 }
