@@ -386,15 +386,43 @@ void passing_empty_in_dll()
 
     printf("no error occured\n\n\n");
 }
-void testing_incorrect_input()
+void testing_incorrect_inputpath(char *incorrect)
 {
-    char *incorrect = "error/lib/x86_64-linux-gnu/libm.so.6?cos?2";
+    
     printf("Test %d", ithtest++);
-    printf("\ntesting incorrect input\n");
+    printf("\nTesting incorrect path\n");
     DLL_handler_module(incorrect);
+    printf("no error occured\n\n\n");
+}
+void testing_incorrect_inputfunctionname(char * incorrect){
+    printf("Test %d", ithtest++);
+    printf("\nTesting incorrect function name\n");
+    DLL_handler_module(incorrect);
+    printf("no error occured\n\n\n");
+}
+/*
+void testing_incorrect_arguments(char * incorrect){
+    printf("Test %d", ithtest++);
+    printf("\nTesting incorrect arguments name\n");
+    DLL_handler_module(incorrect);
+    printf("\n\n");
+}
+*/
+void testing_correct_input(char * correct){
+    printf("Test %d", ithtest++);
+    printf("\nTesting correct function name\n");
+    DLL_handler_module(correct);
+    printf("no error occured\n\n\n");
+}
+void opening_more_files(){
+    
 }
 void unit_testing(int thread_limit, int open_file_limit, int memory_limit)
 {
     passing_empty_in_dll();
-    testing_incorrect_input();
+    testing_incorrect_inputpath("error/lib/x86_64-linux-gnu/libm.so.6?cos?2");
+    testing_incorrect_inputfunctionname("/lib/x86_64-linux-gnu/libm.so.6?errors?2");
+    //testing_incorrect_inputfunctionname("/lib/x86_64-linux-gnu/libm.so.6?cos?a?b");
+    testing_correct_input("/lib/x86_64-linux-gnu/libm.so.6?tan?2");
+
 }
