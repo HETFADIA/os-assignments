@@ -158,8 +158,8 @@ void DLL_handler_module(char *ch)
 
 void *request_server(void *p_client)
 {
-    char chararr[5001];
     char *request = (char *)malloc(sizeof(char) * 5001);
+    char chararr[5001];
     int _client_socket = *((int *)p_client);
     free(p_client);
     char *USE = "?", *SE = "?";
