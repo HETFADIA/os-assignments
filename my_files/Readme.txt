@@ -11,9 +11,12 @@ The server takes the library name, function name, arguments from the client proc
 
 
 The program allows multiple clients to send requests, their request can also be processed simultaneously. The dispatcher then handles the requests of the clients.
+Due to multithreading the request of the client can be processed simultaneously so that he/she does not have to wait.
 
 
 Moreover memory limit, thread limit, file open limit etc can be given.
+
+
 
 
 
@@ -43,6 +46,11 @@ The output is then printed in the terminal and a message is sent to the client a
 The dll handler function enqueues the requests of the client and whenever a thread is available the function dequeues the requests and the request is processed.
 
 
+Whenever the program tries to exceed the limits ie. memory limit, thread limit or file open limit, the program does not allow it.
+In case of memory, the program does not allow to make more arrays until the memory frees.
+Similarly in the case of files, no more files can be opened beyond the file open limit
+
+
 3. Executing the files:
 
 
@@ -55,12 +63,14 @@ Executing the main.c
 In the Terminal write
 gcc main.c -lpthread -ldl -o main
 ./main.out [PORT] [Thread limit] [limit of the number of files that can be opened] [max_memory]
+Eg ./main.out 7000 10 10 10000
 
 
 Here the memory is in kbs
 Then in the new terminal
 gcc client.c
 ./a.out [PORT]
+Eg. ./a.out 7000
 
 
 The following constraints are there for better functioning of the server:
@@ -90,5 +100,17 @@ The program allows the following functions to be executed
 
 5. Testing
 To test the program write the following command in the terminal
-gcc main.c -lpthread -ldl
-./a.out test [Thread limit] [limit of the number of files that can be opened] [max_memory]
+gcc main.c -lpthread -ldl -o main
+./main.out test [Thread limit] [limit of the number of files that can be opened] [max_memory]
+
+
+Eg ./main.out 7000 10 10 10000
+
+
+In the testing part, various checks have been done like passing the wrong function name, passing the wrong path.
+
+
+I also tried to open more than open_file_limit files and the file could not be opened.
+
+
+Most of the corner cases have been handled in the testing part.
