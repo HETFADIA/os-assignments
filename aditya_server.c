@@ -27,7 +27,7 @@ typedef struct sockaddr sckadd;
 int queue_size = 0;
 
 struct node{
-    char *data;
+    char data[500];
     struct node *next;
 };
 
@@ -41,7 +41,8 @@ void enqueue(char *req){
         return;
     }
     struct node *n = (struct node *)malloc(sizeof(struct node));
-    n->data = req;
+    // n->data = req;
+    strncpy(n->data, req, 500);
     n->next = NULL;
     if(tail == NULL){
         head = n;
@@ -58,7 +59,9 @@ char *dequeue(){
         return NULL;
     }
     else{
-        char *res = head->data;
+        // char res = head->data;
+        char *res = (char*)malloc(sizeof(char)*500);
+        strncpy(res, head->data, 500);
         struct node *n = head;
         head = head->next;
         if(head == NULL){
@@ -173,11 +176,11 @@ void *getrequest(void *cl_socket){
     int client_socket = *((int *)cl_socket);
     free(cl_socket);
     char *response = "@!";
+    char request[500];
     while(1){
-        char *request = (char*)malloc(sizeof(char)*5000);
-        memset(request, '\0', sizeof(char) * 5000);
+        memset(request, '\0', sizeof(char) * 500);
 
-        int recv_status = recv(client_socket, request, sizeof(char)*5000, 0);
+        int recv_status = recv(client_socket, request, sizeof(char)*500, 0);
 
         if(recv_status <= 0){
             break;
