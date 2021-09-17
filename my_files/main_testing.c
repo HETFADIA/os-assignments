@@ -64,13 +64,10 @@ char *dequeue()
 
 int thread_count = 0;
 
-
-
 void *request_server(void *p_client);
 bool DLL_handler_module(char *ch);
 int getusage();
 void *dispatcher_of_thread(void *arg);
-
 
 int getusage()
 {
@@ -82,7 +79,8 @@ int getusage()
 
 bool DLL_handler_module(char *ch)
 {
-    if(ch==NULL){
+    if (ch == NULL)
+    {
         return 0;
     }
     char arr[501][501];
@@ -102,7 +100,7 @@ bool DLL_handler_module(char *ch)
         arr[deserializelen][counter++] = ch[i];
     }
     deserializelen++;
-
+    
     void *handle = NULL;
     char *err;
     char *filesstr = "files";
@@ -110,17 +108,24 @@ bool DLL_handler_module(char *ch)
     {
         handle = dlopen(arr[0], RTLD_LAZY);
         err = dlerror();
+        
         if (!handle)
         {
             int len = strlen(err);
             bool many_files_open = 1;
-            for (int i = 0; i < 5; i--)
+            
+            if (len >= 5)
             {
-                if (filesstr[i] != err[len - 5 + i])
+
+                for (int i = 0; i < 5; i++)
                 {
-                    many_files_open = 1;
+                    if (filesstr[i] != err[len - 5 + i])
+                    {
+                        many_files_open = 0;
+                    }
                 }
             }
+            
             if (many_files_open)
             {
 
@@ -133,6 +138,7 @@ bool DLL_handler_module(char *ch)
             }
         }
     }
+    
     //FILE * out=fopen("output.txt","w");
     double result;
     if (strcmp(arr[1], "hypot") != 0 && strcmp(arr[1], "pow") != 0)
@@ -168,7 +174,6 @@ bool DLL_handler_module(char *ch)
     dlclose(handle);
     return 1;
 }
-
 
 void *dispatcher_of_thread(void *arg)
 {
@@ -258,7 +263,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
         //mutex
 
         pthread_t new_thread;
-        int sizeofint=sizeof(int);
+        int sizeofint = sizeof(int);
         int *p_client = (int *)malloc(sizeofint);
         *p_client = _client_socket;
         pthread_create(&new_thread, NULL, request_server, p_client);
@@ -311,7 +316,7 @@ void *request_server(void *p_client)
     pthread_exit(NULL);
     return NULL;
 }
-void unit_testing(int thread_limit,int open_file_limit,int memory_limit);
+void unit_testing(int thread_limit, int open_file_limit, int memory_limit);
 int main(int argc, char **argv)
 {
     if (argc < 5)
@@ -328,24 +333,29 @@ int main(int argc, char **argv)
         printf(".\a.out [PORT] [THREAD_LIMIT_DISPATCHER] [openfile_limit] [MEMORY_LIMIT]\n");
         exit(-1);
     }
-    char * testing="test";
-    int testinglen=strlen(testing);
-    int argv1len=strlen(argv[1]);
-    bool strequals=1;
-    if(testinglen==argv1len){
-        
-        for(int i=0;i<4;i++){
-            if(argv[1][i]!=testing[i]){
-                strequals=0;
+    char *testing = "test";
+    int testinglen = strlen(testing);
+    int argv1len = strlen(argv[1]);
+    bool strequals = 1;
+    if (testinglen == argv1len)
+    {
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (argv[1][i] != testing[i])
+            {
+                strequals = 0;
             }
         }
 
-        if(strequals){
+        if (strequals)
+        {
             int b = atoi(argv[2]), c = atoi(argv[3]), d = atoi(argv[4]);
-            unit_testing(b,c,d);
+            unit_testing(b, c, d);
         }
     }
-    if(strequals){
+    if (strequals)
+    {
         return 0;
     }
     int a = atoi(argv[1]), b = atoi(argv[2]), c = atoi(argv[3]), d = atoi(argv[4]);
@@ -367,15 +377,24 @@ int main(int argc, char **argv)
         make_server(a, b, c, d);
     }
 }
-int ithtest=1;
-void passing_empty_in_dll(){
-    printf("Test %d",ithtest++);
+int ithtest = 1;
+void passing_empty_in_dll()
+{
+    printf("Test %d", ithtest++);
     printf("\ncalling handler module with empty string\n");
     DLL_handler_module(NULL);
 
     printf("no error occured\n\n\n");
 }
-void unit_testing(int thread_limit,int open_file_limit,int memory_limit){
+void testing_incorrect_input()
+{
+    char *incorrect = "error/lib/x86_64-linux-gnu/libm.so.6?cos?2";
+    printf("Test %d", ithtest++);
+    printf("\ntesting incorrect input\n");
+    DLL_handler_module(incorrect);
+}
+void unit_testing(int thread_limit, int open_file_limit, int memory_limit)
+{
     passing_empty_in_dll();
-
+    testing_incorrect_input();
 }
