@@ -103,7 +103,7 @@ void DLL_handler_module(char *ch)
         if (!handle)
         {
             int len = strlen(err);
-            bool many_files_open=err[len - 1] == 's' && err[len - 2] == 'e' && err[len - 3] == 'l' && err[len - 4] == 'i' && err[len - 5] == 'f';
+            bool many_files_open = err[len - 1] == 's' && err[len - 2] == 'e' && err[len - 3] == 'l' && err[len - 4] == 'i' && err[len - 5] == 'f';
             if (many_files_open)
             {
 
@@ -149,22 +149,22 @@ void DLL_handler_module(char *ch)
 void *func(void *p_client)
 {
     char chararr[5001];
+    char *request = (char *)malloc(sizeof(char) * 5001);
     int _client_socket = *((int *)p_client);
     free(p_client);
-    char *USE = "?";
-    char *SE = "?";
+    char *USE = "?", *SE = "?";
+    printf("\n");
     printf("enqueuing client requests begins..\n");
-
     while (true)
     {
         //read the requests from a client one by one and start queuing them up for the dispatcher
 
-        char *request = (char *)malloc(sizeof(char) * 5001);
-        memset(chararr, '\0', sizeof(chararr));
+        
         memset(request, '\0', sizeof(char) * 5001);
+        memset(chararr, '\0', sizeof(chararr));
         int _recv_status = recv(_client_socket, chararr, sizeof(chararr), 0);
-
-        for (int i = 0; i < strlen(chararr); i++)
+        int chararrlen=strlen(chararr);
+        for (int i = 0; i < chararrlen; i++)
         {
             request[i] = chararr[i];
         }
@@ -196,7 +196,7 @@ void *func(void *p_client)
     return NULL;
 }
 
-void *dispatcher_function(void *arg)
+void *dispatcher_of_thread(void *arg)
 {
     while (1)
     {
@@ -219,12 +219,13 @@ void *dispatcher_function(void *arg)
     return NULL;
 }
 
-void make_server(int PORT, int thread_limit_dispatcher, int file_limit, int memory_limit)
+void make_server(int PORT, int thread_limit_dispatcher, int openfile_limit, int memory_limit)
 {
 
-    struct rlimit lim, new_lim;
-    lim.rlim_cur = file_limit;
+    struct rlimit lim;
+    lim.rlim_cur = openfile_limit;
     lim.rlim_max = 1024;
+    struct rlimit new_lim;
     if (setrlimit(RLIMIT_NOFILE, &lim) == -1)
     {
         fprintf(stderr, "%s\n", strerror(errno));
@@ -236,24 +237,25 @@ void make_server(int PORT, int thread_limit_dispatcher, int file_limit, int memo
     pthread_t arr[thread_limit_dispatcher];
     for (int i = 0; i < thread_limit_dispatcher; ++i)
     {
-        pthread_create(&arr[i], NULL, dispatcher_function, NULL);
+        pthread_create(&arr[i], NULL, dispatcher_of_thread, NULL);
     }
-    thread_count = MAX_REQUEST_THREADS;
     int _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket < 0)
     {
         printf("\nSOCKET CREATION UNSUCCESSFUL\n");
     }
-    int IN_size = sizeof(IN);
-    IN server_addr, client_addr;
+    thread_count = MAX_REQUEST_THREADS;
+    struct sockaddr_in server_addr;
+    struct sockaddr_in client_addr;
+    int IN_size = sizeof(struct sockaddr_in);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
-    server_addr.sin_addr.s_addr = INADDR_ANY;
 
-    int _bind_status = bind(_socket, (SA *)&server_addr, IN_size);
+    int _bind_status = bind(_socket, (SA *)&server_addr, sizeof(struct sockaddr_in));
     if (_bind_status < 0)
     {
-        printf("\nBind failed\n");
+        printf("\nthe bind could not be done\n");
     }
     int _listen_status = listen(_socket, LISTEN_BACKLOG);
     if (_listen_status < 0)
@@ -263,15 +265,17 @@ void make_server(int PORT, int thread_limit_dispatcher, int file_limit, int memo
     while (1)
     {
 
-        printf("Waiting.....\n");
+        printf("Waiting for the client to accept\n");
         int _client_socket = accept(_socket, (SA *)&client_addr, &IN_size);
 
         if (thread_count <= 0)
         {
+            printf("\n");
             printf("Thread count at its limit\n");
             continue;
         }
-        printf("Client accepted\n");
+        printf("\n the client accepted your request");
+        printf("\n");
         pthread_mutex_lock(&mutex);
         thread_count -= 1;
         pthread_mutex_unlock(&mutex);
@@ -286,9 +290,18 @@ void make_server(int PORT, int thread_limit_dispatcher, int file_limit, int memo
 
 int main(int argc, char **argv)
 {
+    if (argc < 5)
+    {
+        printf("\nToo less arguments\n");
+    }
+    else if (argc > 5)
+    {
+        printf("\nToo many arguments\n");
+    }
     if (argc != 5)
     {
-        printf(".\a.out [PORT] [THREAD_LIMIT_DISPATCHER] [FILE_LIMIT] [MEMORY_LIMIT]\n");
+
+        printf(".\a.out [PORT] [THREAD_LIMIT_DISPATCHER] [openfile_limit] [MEMORY_LIMIT]\n");
         exit(-1);
     }
 
