@@ -1,7 +1,7 @@
-/lib/x86_64-linux-gnu/libm.so.6?cos?2
-/lib/x86_64-linux-gnu/libm.so.6?sin?1
-/lib/x86_64-linux-gnu/libm.so.6?ceil?2.5
-/lib/x86_64-linux-gnu/libm.so.6?sqrt?10
-/lib/x86_64-linux-gnu/libm.so.6?log10?5
-/lib/x86_64-linux-gnu/libm.so.6?pow?2?5
-/lib/x86_64-linux-gnu/libm.so.6?hypot?3?4
+/lib/x86_64-linux-gnu/libm.so.6?tan?5
+/lib/x86_64-linux-gnu/libm.so.6?sin?2
+/lib/x86_64-linux-gnu/libm.so.6?floor?152.7
+/lib/x86_64-linux-gnu/libm.so.6?cbrt?28
+/lib/x86_64-linux-gnu/libm.so.6?log2?5
+/lib/x86_64-linux-gnu/libm.so.6?pow?2?10
+/lib/x86_64-linux-gnu/libm.so.6?hypot?300?400
