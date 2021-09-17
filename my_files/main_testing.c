@@ -18,10 +18,9 @@
 char separator = '?';
 #define LISTEN_BACKLOG 100
 #define MAX_REQUEST_THREADS 100
-int memlimit;
+int max_memory_limit;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-typedef struct sockaddr SA;
 
 char *queue[100];
 int start = 0;
@@ -196,7 +195,7 @@ void *dispatcher_of_thread(void *arg)
     while (1)
     {
         int memory_curr_used = get_memory_usage();
-        bool memory_more_used = memory_curr_used > memlimit;
+        bool memory_more_used = memory_curr_used > max_memory_limit;
         if (memory_more_used)
         {
             printf("Memory limit exceeded\n");
@@ -231,7 +230,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     }
 
     pthread_t thread_pool[thread_maxlimit];
-    memlimit = memory_limit;
+    max_memory_limit = memory_limit;
 
     for (int i = 0; i < thread_maxlimit; ++i)
     {
