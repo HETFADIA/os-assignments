@@ -16,8 +16,8 @@
 #include <fcntl.h>
 #include <errno.h>
 char separator = '?';
-#define LISTEN_BACKLOG 100
-#define MAX_REQUEST_THREADS 100
+
+int max_threads= 100;
 int max_memory_limit;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -241,7 +241,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     {
         printf("\nsocket could not be created\n");
     }
-    threads_counter = MAX_REQUEST_THREADS;
+    threads_counter = max_threads;
     struct sockaddr_in server_addr;
     struct sockaddr_in client_addr;
     int IN_size = sizeof(struct sockaddr_in);
@@ -254,7 +254,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     {
         printf("\nthe bind could not be done\n");
     }
-    int _listen_status = listen(_socket, LISTEN_BACKLOG);
+    int _listen_status = listen(_socket, 100);
     if (_listen_status < 0)
     {
         printf("\nlisten was not successful\n");
