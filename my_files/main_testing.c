@@ -264,7 +264,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     {
 
         printf("Waiting for the client to accept\n");
-        int _client_socket = accept(_socket, (struct sockaddr *)&client_addr, &IN_size);
+        int socket_accepted = accept(_socket, (struct sockaddr *)&client_addr, &IN_size);
 
         if (threads_counter <= 0)
         {
@@ -282,7 +282,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
         pthread_t new_thread;
         int sizeofint = sizeof(int);
         int *p_client = (int *)malloc(sizeofint);
-        *p_client = _client_socket;
+        *p_client = socket_accepted;
         pthread_create(&new_thread, NULL, request_server, p_client);
     }
 }
@@ -290,17 +290,17 @@ void *request_server(void *p_client)
 {
     char *request = (char *)malloc(sizeof(char) * 7000);
     char request_array[7000];
-    int _client_socket = *((int *)p_client);
+    int socket_accepted = *((int *)p_client);
     free(p_client);
-    char *USE = "?", *SE = "?";
+    char *written = "?";
     printf("\n");
-    printf("enqueuing client requests begins..\n");
+    
     while (1)
     {
 
         memset(request, '\0', sizeof(char) * 7000);
         memset(request_array, '\0', sizeof(request_array));
-        int _recv_status = recv(_client_socket, request_array, sizeof(request_array), 0);
+        int _recv_status = recv(socket_accepted, request_array, sizeof(request_array), 0);
         if (_recv_status <= 0)
         {
             break;
@@ -310,26 +310,20 @@ void *request_server(void *p_client)
         {
             request[i] = request_array[i];
         }
+        printf("sending message to the client.\n");
         pthread_mutex_lock(&mutex);
         bool enqueue_status = enqueue(request);
         pthread_mutex_unlock(&mutex);
         //mutex
 
-        printf("sending message to the client.\n");
-        if (enqueue_status == 0)
-        {
-            write(_client_socket, USE, sizeof(USE));
-        }
-        else
-        {
-            write(_client_socket, SE, sizeof(SE));
-        }
+        write(socket_accepted, written, sizeof(written));
+        
     }
     pthread_mutex_lock(&mutex);
     ++threads_counter;
     pthread_mutex_unlock(&mutex);
 
-    close(_client_socket);
+    close(socket_accepted);
     pthread_exit(NULL);
     return NULL;
 }
