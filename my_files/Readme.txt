@@ -29,6 +29,13 @@ The clients requests their requests in the following manner:
 All these are in a string form separated by a “?”
 
 
+The example of such a request is /lib/x86_64-linux-gnu/libm.so.6?tan?5
+Here the dll name is /lib/x86_64-linux-gnu/libm.so.6
+The function name is tan
+Here the arguments is 5
+Each of them is separated by “?”
+
+
 The server then processes the string, loads the library and calls the function with the given arguments.
 The output is then printed in the terminal and a message is sent to the client about the confirmation that the above process was successful.
 
