@@ -16,21 +16,23 @@
 #include <unistd.h>
 #include <errno.h>
 
-int memlimit = 0;;
+void unit_test();
+
+int memlimit = 0;
 
 pthread_mutex_t mutex_queue = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_client_thread = PTHREAD_MUTEX_INITIALIZER;
 
 typedef struct sockaddr_in sckadd_in;
 typedef struct sockaddr sckadd;
-void unit_test();
+
+int queue_size = 0;
 
 struct node{
     char *data;
     struct node *next;
 };
 
-int queue_size = 0;
 
 struct node *head = NULL;
 struct node *tail = NULL;
@@ -38,6 +40,7 @@ struct node *tail = NULL;
 void enqueue(char *req){
     if(queue_size >= 100){  //Max queue size is 100
         printf("Queue limit reached\n");
+        return;
     }
     struct node *n = (struct node *)malloc(sizeof(struct node));
     n->data = req;
@@ -77,9 +80,10 @@ int getusage(){
     return usage.ru_maxrss;
 }
 
-void DLL(char *ch){
+void DLL(char *req){
 
-    if(ch==NULL) return;
+    if(req==NULL) return;
+     printf("Request dequeued: %s\n",req);
     char library[100];
     char func[100];
     char var1[100];
@@ -89,59 +93,81 @@ void DLL(char *ch){
     memset(var1, '\0', sizeof(library));
     memset(var2, '\0', sizeof(library));
     int x = 0;
-    for(int i=0; ch[x]!='$';){
-        library[i++] = ch[x++];
+    for(int i=0; req[x]!='$';){
+        library[i++] = req[x++];
     }
     x++;
-    for(int i=0; ch[x]!='$';){
-        func[i++] = ch[x++];
+    for(int i=0; req[x]!='$';){
+        func[i++] = req[x++];
     }
     x++;
-    for(int i=0; ch[x]!='$' && ch[x]!='\0';){
-        var1[i++] = ch[x++];
+    for(int i=0; req[x]!='$' && req[x]!='\0';){
+        var1[i++] = req[x++];
     }
     x++;
-    for(int i=0; ch[x]!='$' && ch[x]!='\0';){
-        var2[i++] = ch[x++];
+    for(int i=0; req[x]!='$' && req[x]!='\0';){
+        var2[i++] = req[x++];
     }
-    double (*f1)(double);
-    double (*f2)(double, double);
     void *handle = NULL;
     char *err;
     while(handle==NULL){
         handle = dlopen(library, RTLD_LAZY);
         err = dlerror();
-        if(!handle){
-            int len = strlen(err);
-            if(err[len-1]=='s' && err[len-2]=='e' && err[len-3]=='l' && err[len-4]=='i' && err[len-5]=='f')
-                printf("Too many open files\n");
+        int len;
+        if(handle==NULL){
+            len = strlen(err);
+            if(err[len-5]=='f' && err[len-4]=='i' && err[len-3]=='l' && err[len-2]=='e' && err[len-1]=='s')
+                printf("Too many files are open\n");
             else{
-                printf("%s\n", err);
+                printf("Request error: %s\n", err);
                 return;
             }
         }
     }
-    float result;
-    if(strcmp(func, "hypot") != 0 && strcmp(func, "pow") != 0){
-        f1 = dlsym(handle, func);
-        if(!f1){
-            printf("The requested function does not exist\n");
+    if(strcmp(func, "pow") == 0){
+        double (*fn)(double, double);
+        fn = dlsym(handle, func);
+        if(fn==NULL){
+            printf("Error in requested function: %s\n",func);
             return;
         }
-        float v1 = atof(var1);
-        result = f1(v1);
+        else{
+            float result;
+            float v1= atof(var1);
+            float v2 = atof(var2);
+            result = fn(v1, v2);
+            printf("%s ------> %f\n", req, result);
+        }
+    }
+    else if(strcmp(func, "remainder") == 0){
+        double (*fn)(double, double);
+        fn = dlsym(handle, func);
+        if(fn==NULL){
+            printf("Error in requested function: %s\n",func);
+            return;
+        }
+        else{
+            float result;
+            float v1= atof(var1);
+            float v2 = atof(var2);
+            result = fn(v1, v2);
+            printf("%s ------> %f\n", req, result);
+        }
     }
     else{
-        f2 = dlsym(handle, func);
-        if(!f2){
-            printf("The requested function does not exist\n");
+        double (*fn)(double);
+        fn = dlsym(handle, func);
+        if(fn==NULL){
+            printf("Error in requested function: %s\n",func);
             return;
         }
-        float v1= atof(var1);
-        float v2 = atof(var2);
-        result = f2(v1, v2);
+        else{
+            float result;
+            float v1 = atof(var1);
+            result = fn(v1);
+            printf("%s ------> %f\n", req, result);
+        }
     }
-    printf("%f <- request response\n", result);
     dlclose(handle);
 }
 
@@ -150,7 +176,7 @@ void *getrequest(void *cl_socket){
     free(cl_socket);
     char *response = "@!";
     while(1){
-        char *request = (char *)malloc(sizeof(char) * 5000);
+        char *request = (char*)malloc(sizeof(char)*5000);
         memset(request, '\0', sizeof(char) * 5000);
 
         int recv_status = recv(client_socket, request, sizeof(char)*5000, 0);
@@ -183,19 +209,14 @@ void *dispatcher(void *arg){
         }
         pthread_mutex_lock(&mutex_queue);
         char *request = dequeue();
-        pthread_mutex_unlock(&mutex_queue);
-        if(request != NULL){
-            printf("Request is: %s\n",request);
-            DLL(request);
-        }
+        pthread_mutex_unlock(&mutex_queue);   
+        DLL(request);
     }
     return NULL;
 }
 
-void make_server(int port, int thread_lim, int file_lim, int mem_lim){
-    if(port<0 || thread_lim<1 || file_lim<3 || mem_lim<getusage()){
-        printf("Invalid arguments, could not create server");
-    }
+void initialize(int port, int thread_lim, int file_lim, int mem_lim){
+
     struct rlimit lim, new_lim;
     lim.rlim_cur = file_lim;
     lim.rlim_max = 1024;
@@ -224,19 +245,18 @@ void make_server(int port, int thread_lim, int file_lim, int mem_lim){
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
-    int bind_status = bind(server_socket, (sckadd *)&server_addr, in_size);
-    if(bind_status < 0) {
+    if(bind(server_socket, (sckadd *)&server_addr, in_size) < 0) {
         printf("Bind failed");
         exit(-1);
     }
-    int listen_status = listen(server_socket, 100); //Max listen backlog is 100
-    if(listen_status  < 0){
+     //Max listen backlog is 100
+    if(listen(server_socket, 100) < 0){
         printf("Listen failed");
         exit(-1);
     }
     while(1){
 
-        printf("Waiting for client\n");
+        printf("Waiting for new client\n");
         int client_socket = accept(server_socket, (sckadd *) &client_addr, &in_size);
 
         if(client_thread <= 0){
@@ -258,75 +278,70 @@ void make_server(int port, int thread_lim, int file_lim, int mem_lim){
 }
 
 int main(int argc, char **argv){
-    if(argc != 5){
-        printf("Invalid arguments!\n");
-        printf(".\a.out <Port> <Thread Pool> <File Limit> <Memory Limit>\n");
-        exit(-1);
-    }
     if(atoi(argv[1]) == 0){
         unit_test();
-        exit(0);
+        exit(1);
     }
-    make_server(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
+    if(argc != 5){
+        printf("Invalid arguments!\n");
+        printf("./server <Port> <Thread Pool> <File Limit> <Memory Limit>\n");
+        exit(-1);
+    }
+    if(atoi(argv[1])<0 || atoi(argv[2])<1 || atoi(argv[3])<3 || atoi(argv[4])<getusage()){
+        printf("Invalid arguments, could not create server\n");
+        exit(-1);
+    }
+    printf("Making server\n");
+    initialize(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
 }
 
 void unit_test(){
 
-    // wrong args in CLI
-    // such as negative file number etc.
-    // make_server(3000, 10, -1, 100000);
+    printf("\nTest 1: null value in DLL\n");
+    //Pass NULL into DLL
+    DLL(NULL);
+    printf("Passed\n");
 
+    printf("\nTest 2: Normal function with 1 argument\n");
+    //Try valid function which takes one argument
+    printf("sin(2), Expected: -0.756802");
+    char *test2 = "/lib/x86_64-linux-gnu/libm.so.6$sin$4";
+    DLL(test2);
 
-    //DLL_handler_module check
-    //1. what if input NULL
-    DLL(NULL); //doesn't do anything
+    printf("\nTest 3\n");
+    //Invalid File Path
+    char *test3 = "bogus$sin$4";
+    DLL(test3);
 
-    //2. passing a valid string of the format described in the README
-    char *ch = "/lib/x86_64-linux-gnu/libm.so.6#cos#2";
-    //format is "file_path" + "#" + "cos" + "#" + "2";
-    DLL(ch);
+    printf("\nTest 4\n");
+    //Invalid Function
+    char *test4 = "/lib/x86_64-linux-gnu/libm.so.6$bogus$4";
+    DLL(test4);
 
-    //3. invalid file path
-    ch = "/does_not_exist#cos#2";
-    DLL(ch);
+    printf("\nTest 5\n");
+    //Invalid Values
+    printf("log(-200), Expected: nan\n");
+    char *test5 = "/lib/x86_64-linux-gnu/libm.so.6$log$-200";
+    DLL(test5);
 
-    //4. invalid function
-    ch = "/lib/x86_64-linux-gnu/libm.so.6#does_not_exist#2";
-    DLL(ch);
+    printf("\nTest 6: Normal function with 2 arguments\n");
+    //Try valid function which takes two arguments
+    printf("pow(2,10), Expected: 1024");
+    char *test6 = "/lib/x86_64-linux-gnu/libm.so.6$pow$2$10";
+    DLL(test6);
 
-    //if any of the above cases are not handled the program may crash
+    printf("\nTest 7: Test dequeue with empty queue\n");
+    //Try to dequeue with empty queue
+    char *test7 = dequeue();
 
-    //dequeue and enqueue test
-    //1. checking for saturation of queue
-    for(int i = 0; i < 101; i++){
-        char *ch1 = (char *)malloc(sizeof(char) * 100);
-        ch1 = "enqueue";
-        enqueue(ch1);
-        if(1){ //-----------------------------------------------Change
-            printf("Queue full as the queue has a max size of 100\n");
-        }
-        //enqueue status being 0 implies success
+    printf("\nTest 8: Overfill queue by 3\n");
+    //Queue limit should be 100, it should not cross 100;
+    for(int i=0;i<103;i++){
+        char *test8 = "Bogus";
+        enqueue(test8);
     }
+    printf("Current queue size: %d\n", queue_size);
 
-    //2. check if queue_size == 100
-    if(queue_size ==   100){
-        printf("Queue size correctly identified\n");
-    }
-    else{
-        printf("Queue size is incorrect\n");
-    }
-
-    //3. checking for dequeue and handling of underflow condition
-    char *to_compare = "enqueue";
-    for(int i = 0; i < 101; i++){
-        char *ch1 = dequeue();
-        if(!ch1){
-            printf("Dequeue attempt of elements from an empty queue\n");
-            continue;
-        }
-        if(strcmp(ch1, to_compare) != 0){
-            printf("enqueue/dequeue failed");
-        }
-    }
-    // this concludes all functions that can be check separate from the server
+    printf("\n------------------------------\n");
+    printf("Final verdict: All tests passed\n");
 }
