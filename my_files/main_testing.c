@@ -111,6 +111,7 @@ bool dll_handler_function(char *array_of_character)
     char *filesstr = "files";
     while (handle == NULL)
     {
+        //opening the dynamic library
         handle = dlopen(deserialize[0], RTLD_LAZY);
         err = dlerror();
 
@@ -196,7 +197,7 @@ bool dll_handler_function(char *array_of_character)
         result = function1(atof(deserialize[2]), atof(deserialize[3]), atof(deserialize[4]), atof(deserialize[5]));
     }
 
-    printf("%f is obtained as the responce of the request\n", result);
+    printf("%f is obtained as the responce of the request   %s\n", result,array_of_character);
     dlclose(handle);
     return 1;
 }
