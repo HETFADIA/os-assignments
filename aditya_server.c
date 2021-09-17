@@ -16,8 +16,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-void unit_test();
-
 int memlimit = 0;
 
 pthread_mutex_t mutex_queue = PTHREAD_MUTEX_INITIALIZER;
@@ -277,24 +275,6 @@ void initialize(int port, int thread_lim, int file_lim, int mem_lim){
     }
 }
 
-int main(int argc, char **argv){
-    if(atoi(argv[1]) == 0){
-        unit_test();
-        exit(1);
-    }
-    if(argc != 5){
-        printf("Invalid arguments!\n");
-        printf("./server <Port> <Thread Pool> <File Limit> <Memory Limit>\n");
-        exit(-1);
-    }
-    if(atoi(argv[1])<0 || atoi(argv[2])<1 || atoi(argv[3])<3 || atoi(argv[4])<getusage()){
-        printf("Invalid arguments, could not create server\n");
-        exit(-1);
-    }
-    printf("Making server\n");
-    initialize(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
-}
-
 void unit_test(){
 
     printf("\nTest 1: null value in DLL\n");
@@ -344,4 +324,22 @@ void unit_test(){
 
     printf("\n------------------------------\n");
     printf("Final verdict: All tests passed\n");
+}
+
+int main(int argc, char **argv){
+    if(atoi(argv[1]) == 0){
+        unit_test();
+        exit(1);
+    }
+    if(argc != 5){
+        printf("Invalid arguments!\n");
+        printf("./server <Port> <Thread Pool> <File Limit> <Memory Limit>\n");
+        exit(-1);
+    }
+    if(atoi(argv[1])<0 || atoi(argv[2])<1 || atoi(argv[3])<3 || atoi(argv[4])<getusage()){
+        printf("Invalid arguments, could not create server\n");
+        exit(-1);
+    }
+    printf("Making server\n");
+    initialize(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
 }
