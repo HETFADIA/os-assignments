@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,10 +11,19 @@
 
 int main(int argc, char **argv)
 {
+    //two arguments should be there
+    //how to run
+    /*
+    gcc myclient.c
+    ./a.out 7000
+
+    */
     if (argc != 2)
     {
+
         if (argc == 1)
         {
+            // only one arguments
             printf("Too  few arguments");
         }
         else
@@ -31,6 +39,7 @@ int main(int argc, char **argv)
         int sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0)
         {
+            //socket could not be created so we return;
             printf("\nsocket could not be created\n");
             exit(-1);
         }
@@ -47,50 +56,69 @@ int main(int argc, char **argv)
             printf("Connect could not be made\n");
             exit(-1);
         }
-        FILE * fp=fopen("input.txt","r");
-        char * str[1000];
-        char  str2[1000];
-        int i1=0;
-        while(fgets(str2, 200, fp)) {
-            int str2len=strlen(str2);
-            str[i1]=(char *)malloc(sizeof(char)*(str2len));
-
-            for(int j=0;j<str2len;j++){
-                    str[i1][j]=str2[j];
-
-            }
-            i1++;
-        }
-
-
-        fclose(fp);
-        /*
-        printf("%d\n",i1);
-        for(int j=0;j<i1;j++){
-            printf("%s",str[j]);
-        }
-        */
-        int strsize = i1;
-        char *read_recieve = (char *)malloc(sizeof(char) * 201);
-        for (int i = 0; i < strsize; i++)
+        //taking the input from the input.txt as read file
+        FILE *fp = fopen("input.txt", "r");
+        char *str[1000];
+        char str2[1000];
+        int i1 = 0;
+        while (fgets(str2, 200, fp))
         {
-            memset(read_recieve,'\0',sizeof(read_recieve));
-            write(sock, str[i], strlen(str[i]));
-            printf("Sent msg %s\n", str[i]);
-            while (read_recieve[0] != '?')
+            int str2len = strlen(str2);
+            str[i1] = (char *)malloc(sizeof(char) * (str2len + 1));
+            //copying the i1th line in str[i1]
+            for (int j = 0; j <= str2len; j++)
             {
-                int _recv_status = recv(sock, read_recieve, sizeof(read_recieve), 0);
-                if (_recv_status <= 0)
+                if (j < str2len)
                 {
-                    printf("\nmessage not received\n");
-                    exit(-1);
+
+                    str[i1][j] = str2[j];
                 }
                 else
                 {
-                    printf("\nreceived the message\n");
+                    str[i1][j] = '\0';
                 }
             }
+
+            i1++;
         }
+
+        fclose(fp);
+        /*
+        */
+        printf("%d\n", i1);
+        for (int j = 0; j < i1; j++)
+        {
+            printf("%s", str[j]);
+        }
+        int strsize = i1;
+        char *read_recieve = (char *)malloc(sizeof(char) * 201);
+        for (int j = 0; j < 1; j++)
+            for (int i = 0; i < strsize; i++)
+            {
+                memset(read_recieve, '\0', sizeof(read_recieve));
+                int strilen = strlen(str[i]);
+                write(sock, str[i], strilen);
+                //printf("Sent msg %s\n", str[i]);
+                while (read_recieve[0] != '?')
+                {
+
+                    if (recv(sock, read_recieve, sizeof(read_recieve), 0) <= 0)
+                    {
+                        printf("\nmessage not received\n");
+                        exit(-1);
+                    }
+                    else
+                    {
+                        //receive the mesasge from the server
+                        printf("\nreceived the message\n");
+                    }
+                }
+            }
         close(sock);
     }
 }
+/*
+    gcc myclient.c
+    ./a.out 7000
+
+    */
