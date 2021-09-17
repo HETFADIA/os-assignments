@@ -21,7 +21,7 @@ char separator = '?';
 int memlimit;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-typedef struct sockaddr_in IN;
+
 typedef struct sockaddr SA;
 
 char *queue[100];
@@ -143,34 +143,34 @@ bool DLL_handler_module(char *ch)
     double result;
     if (deserializelen == 3)
     {
-        double (*f1)(double);
-        f1 = dlsym(handle, arr[1]);
-        if (!f1)
+        double (*function1)(double);
+        function1 = dlsym(handle, arr[1]);
+        if (!function1)
         {
             printf("The requested function does not exist\n");
             return 0;
         }
         double var1 = atof(arr[2]);
-        result = f1(var1);
+        result = function1(var1);
     }
     else if (deserializelen == 4)
     {
-        double (*f2)(double, double);
-        f2 = dlsym(handle, arr[1]);
-        if (!f2)
+        double (*function2)(double, double);
+        function2 = dlsym(handle, arr[1]);
+        if (!function2)
         {
             printf("The requested function does not exist\n");
             return 0;
         }
         double var1 = atof(arr[2]);
         double var2 = atof(arr[3]);
-        result = f2(var1, var2);
+        result = function2(var1, var2);
     }
     else if (deserializelen == 5)
     {
-        double (*f3)(double, double, double);
-        f3 = dlsym(handle, arr[1]);
-        if (!f3)
+        double (*function3)(double, double, double);
+        function3 = dlsym(handle, arr[1]);
+        if (!function3)
         {
             printf("The requested function does not exist\n");
             return 0;
@@ -178,7 +178,7 @@ bool DLL_handler_module(char *ch)
         double var1 = atof(arr[2]);
         double var2 = atof(arr[3]);
         double var3 = atof(arr[4]);
-        result = f3(var1, var2, var3);
+        result = function3(var1, var2, var3);
     }
     /*
     fprintf(out,"%s %f",ch,result);
@@ -247,7 +247,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
 
-    int _bind_status = bind(_socket, (SA *)&server_addr, sizeof(struct sockaddr_in));
+    int _bind_status = bind(_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
     if (_bind_status < 0)
     {
         printf("\nthe bind could not be done\n");
@@ -261,7 +261,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     {
 
         printf("Waiting for the client to accept\n");
-        int _client_socket = accept(_socket, (SA *)&client_addr, &IN_size);
+        int _client_socket = accept(_socket, (struct sockaddr *)&client_addr, &IN_size);
 
         if (thread_count <= 0)
         {
