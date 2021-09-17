@@ -236,7 +236,8 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     {
         pthread_create(&thread_pool[i], NULL, dispatcher_of_thread, NULL);
     }
-    int _socket = socket(AF_INET, SOCK_STREAM, 0);
+    int _socket;
+    _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket < 0)
     {
         printf("\nsocket could not be created\n");
@@ -287,8 +288,8 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
 }
 void *request_server(void *p_client)
 {
-    char *request = (char *)malloc(sizeof(char) * 5001);
-    char request_array[5001];
+    char *request = (char *)malloc(sizeof(char) * 7000);
+    char request_array[7000];
     int _client_socket = *((int *)p_client);
     free(p_client);
     char *USE = "?", *SE = "?";
@@ -297,7 +298,7 @@ void *request_server(void *p_client)
     while (1)
     {
 
-        memset(request, '\0', sizeof(char) * 5001);
+        memset(request, '\0', sizeof(char) * 7000);
         memset(request_array, '\0', sizeof(request_array));
         int _recv_status = recv(_client_socket, request_array, sizeof(request_array), 0);
         if (_recv_status <= 0)
