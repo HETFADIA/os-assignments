@@ -304,7 +304,7 @@ void unit_test(){
 
     printf("\nTest 2: Normal function with 1 argument\n");
     //Try valid function which takes one argument
-    printf("sin(2), Expected: -0.756802");
+    printf("sin(2), Expected: -0.756802\n");
     char *test2 = "/lib/x86_64-linux-gnu/libm.so.6$sin$4";
     DLL(test2);
 
@@ -326,11 +326,11 @@ void unit_test(){
 
     printf("\nTest 6: Normal function with 2 arguments\n");
     //Try valid function which takes two arguments
-    printf("pow(2,10), Expected: 1024");
+    printf("pow(2,10), Expected: 1024\n");
     char *test6 = "/lib/x86_64-linux-gnu/libm.so.6$pow$2$10";
     DLL(test6);
 
-    printf("\nTest 7: Test dequeue with empty queue\n");
+    printf("\nTest 7: Test dequeue with empty queue(No output expected)\n");
     //Try to dequeue with empty queue
     char *test7 = dequeue();
 
