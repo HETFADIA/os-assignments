@@ -62,42 +62,42 @@ char *dequeue()
     return queue[(start++) % qsize];
 }
 
-int thread_count = 0;
+int threads_counter = 0;
 
 void *request_server(void *p_client);
-bool DLL_handler_module(char *ch);
-int getusage();
+bool dll_handler_function(char *array_of_character);
+int get_memory_usage();
 void *dispatcher_of_thread(void *arg);
 
-int getusage()
+int get_memory_usage()
 {
-    int who = RUSAGE_SELF;
     struct rusage usage;
+    int who = RUSAGE_SELF;
     getrusage(who, &usage);
     return usage.ru_maxrss;
 }
 
-bool DLL_handler_module(char *ch)
+bool dll_handler_function(char *array_of_character)
 {
-    if (ch == NULL)
+    if (array_of_character == NULL)
     {
         return 0;
     }
-    char arr[501][501];
+    char deserialize[501][501];
     int deserializelen = 0;
     int counter = 0;
-    memset(arr, '\0', sizeof(arr));
-    int serializelen = strlen(ch);
+    memset(deserialize, '\0', sizeof(deserialize));
+    int serializelen = strlen(array_of_character);
 
     for (int i = 0; i < serializelen; i++)
     {
-        if (ch[i] == separator)
+        if (array_of_character[i] == separator)
         {
             deserializelen++;
             counter = 0;
             continue;
         }
-        arr[deserializelen][counter++] = ch[i];
+        deserialize[deserializelen][counter++] = array_of_character[i];
     }
     deserializelen++;
 
@@ -106,7 +106,7 @@ bool DLL_handler_module(char *ch)
     char *filesstr = "files";
     while (handle == NULL)
     {
-        handle = dlopen(arr[0], RTLD_LAZY);
+        handle = dlopen(deserialize[0], RTLD_LAZY);
         err = dlerror();
 
         if (!handle)
@@ -144,47 +144,40 @@ bool DLL_handler_module(char *ch)
     if (deserializelen == 3)
     {
         double (*function1)(double);
-        function1 = dlsym(handle, arr[1]);
+        function1 = dlsym(handle, deserialize[1]);
         if (!function1)
         {
             printf("The requested function does not exist\n");
             return 0;
         }
-        double var1 = atof(arr[2]);
-        result = function1(var1);
+    
+        result = function1(atof(deserialize[2]));
     }
     else if (deserializelen == 4)
     {
         double (*function2)(double, double);
-        function2 = dlsym(handle, arr[1]);
+        function2 = dlsym(handle, deserialize[1]);
         if (!function2)
         {
             printf("The requested function does not exist\n");
             return 0;
         }
-        double var1 = atof(arr[2]);
-        double var2 = atof(arr[3]);
-        result = function2(var1, var2);
+        result = function2(atof(deserialize[2]), atof(deserialize[3]));
     }
     else if (deserializelen == 5)
     {
         double (*function3)(double, double, double);
-        function3 = dlsym(handle, arr[1]);
+        function3 = dlsym(handle, deserialize[1]);
         if (!function3)
         {
             printf("The requested function does not exist\n");
             return 0;
         }
-        double var1 = atof(arr[2]);
-        double var2 = atof(arr[3]);
-        double var3 = atof(arr[4]);
-        result = function3(var1, var2, var3);
+        
+        result = function3(atof(deserialize[2]), atof(deserialize[3]),atof(deserialize[4]));
     }
-    /*
-    fprintf(out,"%s %f",ch,result);
-    fclose(out);
-    */
-    printf("%f <- request response\n", result);
+    
+    printf("%f is obtained as the responce of the request\n", result);
     dlclose(handle);
     return 1;
 }
@@ -193,7 +186,7 @@ void *dispatcher_of_thread(void *arg)
 {
     while (1)
     {
-        int memory_curr_used = getusage();
+        int memory_curr_used = get_memory_usage();
         bool memory_more_used = memory_curr_used > memlimit;
         if (memory_more_used)
         {
@@ -206,7 +199,7 @@ void *dispatcher_of_thread(void *arg)
         if (request)
         {
             printf("%s\n", request);
-            DLL_handler_module(request);
+            dll_handler_function(request);
         }
     }
     return NULL;
@@ -227,19 +220,19 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
         exit(-1);
     }
 
-    pthread_t arr[thread_maxlimit];
+    pthread_t thread_pool[thread_maxlimit];
     memlimit = memory_limit;
 
     for (int i = 0; i < thread_maxlimit; ++i)
     {
-        pthread_create(&arr[i], NULL, dispatcher_of_thread, NULL);
+        pthread_create(&thread_pool[i], NULL, dispatcher_of_thread, NULL);
     }
     int _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket < 0)
     {
         printf("\nsocket could not be created\n");
     }
-    thread_count = MAX_REQUEST_THREADS;
+    threads_counter = MAX_REQUEST_THREADS;
     struct sockaddr_in server_addr;
     struct sockaddr_in client_addr;
     int IN_size = sizeof(struct sockaddr_in);
@@ -263,7 +256,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
         printf("Waiting for the client to accept\n");
         int _client_socket = accept(_socket, (struct sockaddr *)&client_addr, &IN_size);
 
-        if (thread_count <= 0)
+        if (threads_counter <= 0)
         {
             printf("\n");
             printf("Thread count at its limit\n");
@@ -272,7 +265,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
         printf("\n the client accepted your request");
         printf("\n");
         pthread_mutex_lock(&mutex);
-        --thread_count;
+        --threads_counter;
         pthread_mutex_unlock(&mutex);
         //mutex
 
@@ -286,7 +279,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
 void *request_server(void *p_client)
 {
     char *request = (char *)malloc(sizeof(char) * 5001);
-    char chararr[5001];
+    char request_array[5001];
     int _client_socket = *((int *)p_client);
     free(p_client);
     char *USE = "?", *SE = "?";
@@ -296,16 +289,16 @@ void *request_server(void *p_client)
     {
 
         memset(request, '\0', sizeof(char) * 5001);
-        memset(chararr, '\0', sizeof(chararr));
-        int _recv_status = recv(_client_socket, chararr, sizeof(chararr), 0);
+        memset(request_array, '\0', sizeof(request_array));
+        int _recv_status = recv(_client_socket, request_array, sizeof(request_array), 0);
         if (_recv_status <= 0)
         {
             break;
         }
-        int chararrlen = strlen(chararr);
-        for (int i = 0; i < chararrlen; i++)
+        int request_arraylen = strlen(request_array);
+        for (int i = 0; i < request_arraylen; i++)
         {
-            request[i] = chararr[i];
+            request[i] = request_array[i];
         }
         pthread_mutex_lock(&mutex);
         bool enqueue_status = enqueue(request);
@@ -323,7 +316,7 @@ void *request_server(void *p_client)
         }
     }
     pthread_mutex_lock(&mutex);
-    ++thread_count;
+    ++threads_counter;
     pthread_mutex_unlock(&mutex);
 
     close(_client_socket);
@@ -379,7 +372,7 @@ int main(int argc, char **argv)
     }
     else if (c <= 5)
     {
-        printf("\nplease provide as atleast 6 files must be specified\n");
+        printf("\nplease provide as atleast 6 files \n");
     }
     else if (d <= 6000)
     {
@@ -396,7 +389,7 @@ void passing_empty_in_dll()
 {
     printf("Test %d", ithtest++);
     printf("\ncalling handler module with empty string\n");
-    DLL_handler_module(NULL);
+    dll_handler_function(NULL);
 
     printf("no error occured\n\n\n");
 }
@@ -405,21 +398,21 @@ void testing_incorrect_inputpath(char *incorrect)
 
     printf("Test %d", ithtest++);
     printf("\nTesting incorrect path\n");
-    DLL_handler_module(incorrect);
+    dll_handler_function(incorrect);
     printf("no error occured\n\n\n");
 }
 void testing_incorrect_inputfunctionname(char *incorrect)
 {
     printf("Test %d", ithtest++);
     printf("\nTesting incorrect function name\n");
-    DLL_handler_module(incorrect);
+    dll_handler_function(incorrect);
     printf("no error occured\n\n\n");
 }
 /*
 void testing_incorrect_arguments(char * incorrect){
     printf("Test %d", ithtest++);
     printf("\nTesting incorrect arguments name\n");
-    DLL_handler_module(incorrect);
+    dll_handler_function(incorrect);
     printf("\n\n");
 }
 */
@@ -427,12 +420,10 @@ void testing_correct_input(char *correct)
 {
     printf("Test %d", ithtest++);
     printf("\nTesting correct function name\n");
-    DLL_handler_module(correct);
+    dll_handler_function(correct);
     printf("no error occured\n\n\n");
 }
-void opening_more_files()
-{
-}
+
 void queue_limit_checking()
 {
     printf("Test %d", ithtest++);
@@ -492,6 +483,7 @@ void unit_testing(int thread_limit, int open_file_limit, int memory_limit)
     testing_incorrect_inputfunctionname("/lib/x86_64-linux-gnu/libm.so.6?errors?2");
     //testing_incorrect_inputfunctionname("/lib/x86_64-linux-gnu/libm.so.6?cos?a?b");
     testing_correct_input("/lib/x86_64-linux-gnu/libm.so.6?tan?2");
+    //opening_more_files(open_file_limit);
     queue_limit_checking();
     check_dequeue();
 }
