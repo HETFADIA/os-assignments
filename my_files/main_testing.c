@@ -149,7 +149,7 @@ bool dll_handler_function(char *array_of_character)
     double result;
     if (deserializelen == 3)
     {
-        //length is 3 so library  funciton name and funciton arugment (only one argumetn)
+        //length is 3 so library  funciton name and funciton arugment (only one argument)
         double (*function1)(double);
         function1 = dlsym(handle, deserialize[1]);
         if (!function1)
@@ -162,6 +162,7 @@ bool dll_handler_function(char *array_of_character)
     }
     else if (deserializelen == 4)
     {
+        //length is 4 so library  funciton name and funciton arugment (only one argument)
         double (*function1)(double, double);
         function1 = dlsym(handle, deserialize[1]);
         if (!function1)
@@ -232,7 +233,9 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
 {
 
     struct rlimit lim;
+    //making the file limit as openfile_limit
     lim.rlim_cur = openfile_limit;
+    
     lim.rlim_max = 1024;
     bool not_possible = (setrlimit(RLIMIT_NOFILE, &lim) == -1);
     struct rlimit new_lim;
@@ -254,7 +257,10 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket < 0)
     {
+        //socket could not be formed
         printf("\nsocket could not be created\n");
+        printf("So we exit\n");
+        exit(-1);
     }
     threads_counter = max_threads;
     struct sockaddr_in server_addr;
@@ -381,6 +387,7 @@ int main(int argc, char **argv)
         {
             if (argv[1][i] != testing[i])
             {
+                //if any of the character does not match we make it 0
                 strequals = 0;
             }
         }
@@ -512,6 +519,7 @@ void check_dequeue()
 void checking_file_limit(){
     printf("Test %d", ithtest++);
     struct rlimit lim;
+    //setting the limit as 3
     lim.rlim_cur = 3;
     printf("\nFile limit set to 3\n");
     lim.rlim_max = 1024;
@@ -533,15 +541,23 @@ void checking_file_limit(){
         printf("\nfailure\n");
         return;
     }
-    
+    //setting the file limit as 4
     lim.rlim_cur = 4;
+    not_possible = (setrlimit(RLIMIT_NOFILE, &lim) == -1);
+    if (not_possible)
+    {
+        fprintf(stderr, "%s\n", strerror(errno));
+        exit(-1);
+    }
     printf("\nFile limit set to 4\n");
+    fp= fopen("input3.txt","w");
     FILE * fp2= fopen("input2.txt","w");
     if(fp2==NULL){
         printf("\nsuccessful: could not open the 5th file as the file open limit is 4\n");
     }
     else{
         printf("Error occured");
+        return;
     }
     
 
