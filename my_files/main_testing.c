@@ -237,7 +237,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     int _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket < 0)
     {
-        printf("\nSOCKET CREATION UNSUCCESSFUL\n");
+        printf("\nsocket could not be created\n");
     }
     thread_count = MAX_REQUEST_THREADS;
     struct sockaddr_in server_addr;
@@ -255,7 +255,7 @@ void make_server(int PORT, int thread_maxlimit, int openfile_limit, int memory_l
     int _listen_status = listen(_socket, LISTEN_BACKLOG);
     if (_listen_status < 0)
     {
-        printf("\nlisten failed\n");
+        printf("\nlisten was not successful\n");
     }
     while (1)
     {
@@ -312,7 +312,7 @@ void *request_server(void *p_client)
         pthread_mutex_unlock(&mutex);
         //mutex
 
-        printf("sending response about succesful or unsuccesful enqueue back to the client.\n");
+        printf("sending message to the client.\n");
         if (enqueue_status == 0)
         {
             write(_client_socket, USE, sizeof(USE));
@@ -344,7 +344,7 @@ int main(int argc, char **argv)
     if (argc != 5)
     {
 
-        printf(".\a.out [PORT] [THREAD_LIMIT_DISPATCHER] [openfile_limit] [MEMORY_LIMIT]\n");
+        printf(".\a.out [PORT] [limit of the thread] [openfile_limit] [maximum memory of the program]\n");
         exit(-1);
     }
     char *testing = "test";
