@@ -17,8 +17,8 @@ int main(int argc, char **argv){
         printf("format of input = a.out || [Maximum number of instances available] || [Maximum number of threads to use in the simulation.] || [Deadlock detection check interval d in seconds.] || name of the instances ");
         exit(-1);
     }
-    max_instances=stoi(argv[0]);
-    max_threads=stoi(argv[1]);
-    deadlock_detection_interval=stoi(argv[2]);
+    max_instances=stoi(argv[1]);
+    max_threads=stoi(argv[2]);
+    deadlock_detection_interval=stoi(argv[3]);
     array_of_resources=(int *)malloc(sizeof(int)*max_instances);
 }
