@@ -36,7 +36,7 @@ void * thread_process(void * args){
         int total_non_zero_resouce_for_thread = max_resources;
         for(int i = 0; i < max_resources; i++){
 
-            resource_needed_in_future[i]=randrange(arr_of_resources[i] + 1);
+            resource_needed_in_future[i]=randrange(array_of_resources[i] + 1);
             if(!resource_needed_in_future[i]) total_non_zero_resouce_for_thread -= 1;
             total_resource_requested_by_thread[i] = resource_needed_in_future[i];
             requests[thread_no][i] = resource_needed_in_future[i];
