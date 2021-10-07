@@ -10,5 +10,6 @@
     },
     "files.associations": {
         "stddef.h": "c"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
