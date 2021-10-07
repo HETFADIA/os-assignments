@@ -7,6 +7,10 @@
 #include <stddef.h>
 #include <errno.h>
 #include <time.h>
+void sleep_for_decided(int d){
+    int select=700+rand()%800;//selects random time (0.7d,1.5d)
+    sleep(select*d);
+}
 int main(){
     printf("hi1\n");
     usleep(0.9*1000000);
