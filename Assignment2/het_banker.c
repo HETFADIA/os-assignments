@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <stddef.h>
-int * array_of_resources;
+int * resource_needed_in_futureay_of_resources;
 int max_resources,max_threads,deadlock_detection_interval;
 int requests[200][1000];
 int min(int x,int y){
@@ -30,32 +30,32 @@ void sleep_for_decided(int d){
 void * thread_process(void * args){
     int *thread_no_pointer=(int *)args;
     int thread_no=*thread_no_pointer;
-    int arr[max_resources];
+    int resource_needed_in_future[max_resources];
     int total_resource_requested_by_thread[max_resources];
     while(1){
         int total_non_zero_resouce_for_thread = max_resources;
         for(int i = 0; i < max_resources; i++){
 
-            arr[i]=randrange(arr_of_resources[i] + 1)
-            if(!arr[i]) total_non_zero_resouce_for_thread -= 1;
-            total_resource_requested_by_thread[i] = arr[i];
-            requests[thread_no][i] = arr[i];
+            resource_needed_in_future[i]=randrange(resource_needed_in_future_of_resources[i] + 1);
+            if(!resource_needed_in_future[i]) total_non_zero_resouce_for_thread -= 1;
+            total_resource_requested_by_thread[i] = resource_needed_in_future[i];
+            requests[thread_no][i] = resource_needed_in_future[i];
         }
         // total_non_zero_resouce_for_thread the requirement of resources, if none end looping
         while(total_non_zero_resouce_for_thread > 0){
             int resource_for_now=randrange(max_resources);
 
-            if(!arr[resource_for_now]) continue;
+            if(!resource_needed_in_future[resource_for_now]) continue;
 
             //mutex lock part 1
-            int taken = min(arr_of_resources[resource_for_now], arr[resource_for_now]);
-            arr_of_resources[resource_for_now] -= taken;
+            int taken = min(resource_needed_in_future_of_resources[resource_for_now], resource_needed_in_future[resource_for_now]);
+            resource_needed_in_future_of_resources[resource_for_now] -= taken;
             //mutex unlock
 
-            arr[resource_for_now] -= taken;
+            resource_needed_in_future[resource_for_now] -= taken;
             requests[thread_no][resource_for_now] -= taken;
 
-            if(!arr[resource_for_now]){
+            if(!resource_needed_in_future[resource_for_now]){
                 total_non_zero_resouce_for_thread -= 1;
             }
             
@@ -68,7 +68,7 @@ void * thread_process(void * args){
         //return the resources back
         for(int i = 0; i < max_resources; i++){
             //mutex lock 2
-            arr_of_resources[i] += total_resource_requested_by_thread[i];
+            resource_needed_in_future_of_resources[i] += total_resource_requested_by_thread[i];
             //mutex unlock
         }
     }
@@ -84,7 +84,7 @@ int main(int argc, char **argv){
     max_resources=stoi(argv[1]);
     max_threads=stoi(argv[2]);
     deadlock_detection_interval=stoi(argv[3]);
-    array_of_resources=(int *)malloc(sizeof(int)*max_resources);
+    resource_needed_in_futureay_of_resources=(int *)malloc(sizeof(int)*max_resources);
     if(max_resources+4!=argc){
         printf("incorrect input format\n");
         printf("The no of max instances is incorrect\n");
@@ -95,6 +95,6 @@ int main(int argc, char **argv){
         exit(-1);
     }
     for(int i=4;i<argc;i++){
-        array_of_resources[i-4]=stoi(argv[i]);
+        resource_needed_in_futureay_of_resources[i-4]=stoi(argv[i]);
     }
 }
