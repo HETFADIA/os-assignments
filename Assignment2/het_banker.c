@@ -23,6 +23,10 @@ int randint(int x,int y){
 int randrange(int x,int y){
     return x+ rand()%(y-x);
 }
+void sleep_for_decided(int d){
+    int select=1000*(700+rand()%800);//selects random time (0.7d,1.5d)
+    usleep(select*d);
+}
 void * thread_process(void * args){
     int *thread_no_pointer=(int *)args;
     int thread_no=*thread_no_pointer;
@@ -31,14 +35,15 @@ void * thread_process(void * args){
     while(1){
         int total_non_zero_resouce_for_thread = max_resources;
         for(int i = 0; i < max_resources; i++){
-            arr[i] = rand() % (arr_of_resources[i] + 1);
+
+            arr[i]=randrange(arr_of_resources[i] + 1)
             if(!arr[i]) total_non_zero_resouce_for_thread -= 1;
             total_resource_requested_by_thread[i] = arr[i];
             requests[thread_no][i] = arr[i];
         }
         // total_non_zero_resouce_for_thread the requirement of resources, if none end looping
         while(total_non_zero_resouce_for_thread > 0){
-            int resource_for_now = rand() % max_resources;
+            int resource_for_now=randrange(max_resources);
 
             if(!arr[resource_for_now]) continue;
 
@@ -53,10 +58,11 @@ void * thread_process(void * args){
             if(!arr[resource_for_now]){
                 total_non_zero_resouce_for_thread -= 1;
             }
-            sleep(rand() % deadlock_detection_interval + 1);
+            
+            sleep(randint(1,deadlock_detection_interval));
         }
         // sleep for (0.7d, 1.5d);
-        usleep((7 * deadlock_detection_interval + rand() % deadlock_detection_interval * 8) * 1e5);
+        sleep_for_decided(deadlock_detection_interval);
         // run thread again like normal people
 
         //return the resources back
@@ -68,10 +74,7 @@ void * thread_process(void * args){
     }
     return NULL;
 }
-void sleep_for_decided(int d){
-    int select=1000*(700+rand()%800);//selects random time (0.7d,1.5d)
-    usleep(select*d);
-}
+
 int main(int argc, char **argv){
     //a.out || [Maximum number of instances available] || [Maximum number of threads to use in the simulation.] || [Deadlock detection check interval d in seconds.] || name of the instances
     if(argc<5){
