@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-// #include <sys/socket.h>
-// #include <sys/un.h>
-// #include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <arpa/inet.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <dlfcn.h>
-// #include <sys/resource.h>
+#include <sys/resource.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -170,7 +170,7 @@ int heuristics4(bool *arr_involved_in_deadlock)
 
 void *deadlock_detection(void *args)
 {
-    
+    printf("detecting deadlock\n");
     //run this thread infinitely
 
     //do something, I forgor 💀
@@ -198,7 +198,7 @@ void *deadlock_detection(void *args)
             arr_involved_in_deadlock[i] = 1;
         }
     }
-    int to_be_removed;
+    int to_be_removed=-1;
     if (function_no == 0)
     {
         to_be_removed = heuristics1(arr_involved_in_deadlock);
@@ -215,6 +215,7 @@ void *deadlock_detection(void *args)
     {
         to_be_removed = heuristics4(arr_involved_in_deadlock);
     }
+    printf("to be removed is %d and deadlock is %d",to_be_removed,deadlock_found);
     keep_alive[to_be_removed]=0;
     sleep(TIME_DELAY);
     return NULL;
@@ -222,7 +223,7 @@ void *deadlock_detection(void *args)
 
 int main(int argc, char **argv)
 {
-    if (argc < 6)
+    if (argc < 5)
     {
         // ./a.out 1 1 5 4
         printf("Invalid input, insufficient command line arguments\n");
@@ -257,4 +258,7 @@ int main(int argc, char **argv)
         pthread_create(&arr_thread[i], NULL, P_x, thread_num);
     }
     TIME_DELAY = atoi(argv[TOTAL_RESOURCES + 3]);
+    while(1){
+
+    }
 }
