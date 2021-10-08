@@ -88,6 +88,7 @@ int sum(int * arr,int len){
     return res;
 }
 int heuristics1(bool * arr_involved_in_deadlock){
+    //selects max sum of resources
     int to_be_removed=0;
     int to_be_removed_sum=-1;
     for(int i=0;i<TOTAL_THREADS;i++){
@@ -100,6 +101,7 @@ int heuristics1(bool * arr_involved_in_deadlock){
     return to_be_removed;
 }
 int heuristics2(bool * arr_involved_in_deadlock){
+    //selects max resource
     int to_be_removed=0;
     int to_be_removed_value=-1;
     for(int i=0;i<TOTAL_THREADS;i++){
