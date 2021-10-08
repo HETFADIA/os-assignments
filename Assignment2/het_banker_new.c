@@ -99,6 +99,21 @@ int heuristics1(bool * arr_involved_in_deadlock){
     }
     return to_be_removed;
 }
+int heuristics2(bool * arr_involved_in_deadlock){
+    int to_be_removed=0;
+    int to_be_removed_value=-1;
+    for(int i=0;i<TOTAL_THREADS;i++){
+        if(arr_involved_in_deadlock[i]){
+            for(int j=0;j<TOTAL_RESOURCES;j++){
+                if(requests[i][j]>to_be_removed_value){
+                    to_be_removed=i;
+                    to_be_removed_value=request[i][j];
+                }
+            }
+        }
+    }
+    return to_be_removed;
+}
 void *deadlock_detection(void *args)
 {
     //run this thread infinitely
