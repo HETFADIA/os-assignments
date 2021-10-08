@@ -91,7 +91,7 @@ int sum(int * arr,int len){
     return res;
 }
 int heuristics1(bool * arr_involved_in_deadlock){
-    //selects max sum of resources
+    //selects the resource having max sum of resources needed(max(sum(needed resources)))
     int to_be_removed=0;
     int to_be_removed_sum=-1;
     for(int i=0;i<TOTAL_THREADS;i++){
@@ -117,7 +117,20 @@ int heuristics2(bool * arr_involved_in_deadlock){
     return to_be_removed;
 }
 int heuristics3(bool * arr_involved_in_deadlock){
-    //selects max resource
+    //selects the resource having max sum of resources max_needed(max(sum(max_needed)))
+    int to_be_removed=0;
+    int to_be_removed_sum=-1;
+    for(int i=0;i<TOTAL_THREADS;i++){
+        int temp_sum=sum(max_requests[i],TOTAL_RESOURCES);
+        if(arr_involved_in_deadlock[i] && temp_sum>to_be_removed_sum){
+            to_be_removed=i;
+            to_be_removed_sum=temp_sum;
+        }
+    }
+    return to_be_removed;
+}
+int heuristics4(bool * arr_involved_in_deadlock){
+    //selects max resource 
     int to_be_removed=0;
     int to_be_removed_value=-1;
     for(int i=0;i<TOTAL_THREADS;i++){
