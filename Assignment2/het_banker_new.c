@@ -23,7 +23,7 @@ int time_stamp_counter = 0;
 bool *keep_alive;
 int **requests;
 int **max_requests;
-int function_no ;
+int function_no;
 int min(int x, int y)
 {
     if (x < y)
@@ -72,7 +72,7 @@ void *P_x(void *args)
             }
             sleep(rand() % TIME_DELAY + 1);
         }
-        keep_alive[thread_num]=1;
+        keep_alive[thread_num] = 1;
         // sleep for (0.7d, 1.5d);
         usleep((7 * TIME_DELAY + rand() % TIME_DELAY * 8) * 1e5);
         // run thread again like normal people
@@ -82,7 +82,7 @@ void *P_x(void *args)
         {
             //mutex lock 2
             pthread_mutex_lock(&mutex_arr_of_resource);
-            arr_of_resources[i] += (save_temp[i]-arr[i]);
+            arr_of_resources[i] += (save_temp[i] - arr[i]);
             pthread_mutex_unlock(&mutex_arr_of_resource);
             //mutex unlock
         }
@@ -168,9 +168,10 @@ int heuristics4(bool *arr_involved_in_deadlock)
     return to_be_removed;
 }
 
-void *deadlock_detection(void *args)
+void deadlock_detection()
 {
     printf("detecting deadlock\n");
+    printf("%d %d %d %d\n", TOTAL_THREADS, TOTAL_RESOURCES, TIME_DELAY, function_no);
     //run this thread infinitely
 
     //do something, I forgor 💀
@@ -198,27 +199,31 @@ void *deadlock_detection(void *args)
             arr_involved_in_deadlock[i] = 1;
         }
     }
-    int to_be_removed=-1;
-    if (function_no == 0)
+    printf("deadlock is %d", deadlock_found);
+    int to_be_removed = -1;
+    if (deadlock_found)
     {
-        to_be_removed = heuristics1(arr_involved_in_deadlock);
+        if (function_no == 0)
+        {
+            to_be_removed = heuristics1(arr_involved_in_deadlock);
+        }
+        else if (function_no == 1)
+        {
+            to_be_removed = heuristics2(arr_involved_in_deadlock);
+        }
+        else if (function_no == 2)
+        {
+            to_be_removed = heuristics3(arr_involved_in_deadlock);
+        }
+        else if (function_no == 3)
+        {
+            to_be_removed = heuristics4(arr_involved_in_deadlock);
+        }
+        printf("to be removed is %d and deadlock is %d", to_be_removed, deadlock_found);
+        keep_alive[to_be_removed] = 0;
     }
-    else if (function_no == 1)
-    {
-        to_be_removed = heuristics2(arr_involved_in_deadlock);
-    }
-    else if (function_no == 2)
-    {
-        to_be_removed = heuristics3(arr_involved_in_deadlock);
-    }
-    else if (function_no == 3)
-    {
-        to_be_removed = heuristics4(arr_involved_in_deadlock);
-    }
-    printf("to be removed is %d and deadlock is %d",to_be_removed,deadlock_found);
-    keep_alive[to_be_removed]=0;
+
     sleep(TIME_DELAY);
-    return NULL;
 }
 
 int main(int argc, char **argv)
@@ -226,6 +231,7 @@ int main(int argc, char **argv)
     if (argc < 5)
     {
         // ./a.out 1 1 5 4
+        //./a.out 2 3 4 2 1
         printf("Invalid input, insufficient command line arguments\n");
         exit(-1);
     }
@@ -236,7 +242,7 @@ int main(int argc, char **argv)
         arr_of_resources[i] = atoi(argv[i + 2]);
     }
     TOTAL_THREADS = atoi(argv[TOTAL_RESOURCES + 2]);
-    pthread_t arr_thread[TOTAL_THREADS];
+    // pthread_t arr_thread[TOTAL_THREADS];
     requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
     max_requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
     keep_alive = (bool *)malloc(sizeof(bool) * TOTAL_THREADS);
@@ -248,17 +254,17 @@ int main(int argc, char **argv)
         keep_alive[i] = 1;
         time_stamp[i] = 0;
     }
-    pthread_t t_dash;
-    function_no=0;
-    pthread_create(&t_dash, NULL, deadlock_detection, NULL);
-    for(int i = 0; i < TOTAL_THREADS; i++){
-        int * thread_num=(int *)malloc(sizeof(int)*1);
-        *thread_num=i;
-        
-        pthread_create(&arr_thread[i], NULL, P_x, thread_num);
-    }
     TIME_DELAY = atoi(argv[TOTAL_RESOURCES + 3]);
-    while(1){
+    function_no = 0;
+    printf("%d %d %d %d\n", TOTAL_THREADS, TOTAL_RESOURCES, TIME_DELAY, function_no);
+    deadlock_detection();
+    // pthread_t t_dash;
+    // pthread_create(&t_dash, NULL, deadlock_detection, NULL);
+    // for (int i = 0; i < TOTAL_THREADS; i++)
+    // {
+    //     int *thread_num = (int *)malloc(sizeof(int) * 1);
+    //     *thread_num = i;
 
-    }
+    //     pthread_create(&arr_thread[i], NULL, P_x, thread_num);
+    // }
 }
