@@ -18,6 +18,8 @@
 
 int TOTAL_RESOURCES, TOTAL_THREADS, TIME_DELAY;
 int *arr_of_resources;
+int * time_stamp;
+int time_stamp_counter=0;
 bool * keep_alive;
 int **requests;
 int **max_requests;
@@ -32,6 +34,7 @@ void *P_x(void *args)
 {
     int thread_num = *((int *)args);
     int arr[TOTAL_RESOURCES], save_temp[TOTAL_RESOURCES];
+    time_stamp[thread_num]=++time_stamp_counter;
     while (keep_alive[thread_num])
     {
         int TRACK = TOTAL_RESOURCES;
@@ -101,6 +104,19 @@ int heuristics1(bool * arr_involved_in_deadlock){
     return to_be_removed;
 }
 int heuristics2(bool * arr_involved_in_deadlock){
+    //selects youngest thread i.e. having max time_stamp
+    int to_be_removed=0;
+    int to_be_removed_time=-1;
+    for(int i=0;i<TOTAL_THREADS;i++){
+        
+        if(arr_involved_in_deadlock[i] && time_stamp[i]>to_be_removed_time){
+            to_be_removed=i;
+            to_be_removed_time=to_be_removed_time;
+        }
+    }
+    return to_be_removed;
+}
+int heuristics3(bool * arr_involved_in_deadlock){
     //selects max resource
     int to_be_removed=0;
     int to_be_removed_value=-1;
@@ -116,6 +132,7 @@ int heuristics2(bool * arr_involved_in_deadlock){
     }
     return to_be_removed;
 }
+
 void *deadlock_detection(void *args)
 {
     //run this thread infinitely
@@ -167,11 +184,13 @@ int main(int argc, char **argv)
     requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
     max_requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
     keep_alive=(bool *)malloc(sizeof(bool)*TOTAL_THREADS);
+    time_stamp=(int *)malloc(sizeof(int)*TOTAL_THREADS);
     for (int i = 0; i < TOTAL_THREADS; i++)
     {
         requests[i] = (int *)malloc(sizeof(int) * TOTAL_RESOURCES);
         max_requests[i] = (int *)malloc(sizeof(int) * TOTAL_RESOURCES);
         keep_alive[i]=1;
+        time_stamp[i]=0;
     }
     TIME_DELAY = stoi(argv[TOTAL_RESOURCES + 3]);
 }
