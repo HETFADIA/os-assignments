@@ -23,6 +23,7 @@ int time_stamp_counter = 0;
 bool *keep_alive;
 int **requests;
 int **max_requests;
+int function_no ;
 int min(int x, int y)
 {
     if (x < y)
@@ -169,7 +170,7 @@ int heuristics4(bool *arr_involved_in_deadlock)
 
 void *deadlock_detection(void *args)
 {
-    int thread_num = *((int *)args);
+    
     //run this thread infinitely
 
     //do something, I forgor 💀
@@ -198,19 +199,19 @@ void *deadlock_detection(void *args)
         }
     }
     int to_be_removed;
-    if (thread_num == 0)
+    if (function_no == 0)
     {
         to_be_removed = heuristics1(arr_involved_in_deadlock);
     }
-    else if (thread_num == 1)
+    else if (function_no == 1)
     {
         to_be_removed = heuristics2(arr_involved_in_deadlock);
     }
-    else if (thread_num == 2)
+    else if (function_no == 2)
     {
         to_be_removed = heuristics3(arr_involved_in_deadlock);
     }
-    else if (thread_num == 3)
+    else if (function_no == 3)
     {
         to_be_removed = heuristics4(arr_involved_in_deadlock);
     }
@@ -221,7 +222,7 @@ void *deadlock_detection(void *args)
 
 int main(int argc, char **argv)
 {
-    if (argc < 5)
+    if (argc < 6)
     {
         // ./a.out 1 1 5 4
         printf("Invalid input, insufficient command line arguments\n");
@@ -234,6 +235,7 @@ int main(int argc, char **argv)
         arr_of_resources[i] = stoi(argv[i + 2]);
     }
     TOTAL_THREADS = stoi(argv[TOTAL_RESOURCES + 2]);
+    pthread_t arr_thread[TOTAL_THREADS];
     requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
     max_requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
     keep_alive = (bool *)malloc(sizeof(bool) * TOTAL_THREADS);
@@ -244,6 +246,15 @@ int main(int argc, char **argv)
         max_requests[i] = (int *)malloc(sizeof(int) * TOTAL_RESOURCES);
         keep_alive[i] = 1;
         time_stamp[i] = 0;
+    }
+    pthread_t t_dash;
+    function_no=0;
+    pthread_create(&t_dash, NULL, deadlock_detection, NULL);
+    for(int i = 0; i < TOTAL_THREADS; i++){
+        int * thread_num=(int *)malloc(sizeof(int)*1);
+        *thread_num=i;
+        
+        pthread_create(&arr_thread[i], NULL, P_x, thread_num);
     }
     TIME_DELAY = stoi(argv[TOTAL_RESOURCES + 3]);
 }
