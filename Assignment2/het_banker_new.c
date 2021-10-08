@@ -43,7 +43,7 @@ void *P_x(void *args)
         int TRACK = TOTAL_RESOURCES;
         for (int i = 0; i < TOTAL_RESOURCES; i++)
         {
-            arr[i] = rand() % (arr_of_resources[i] + 1);
+            arr[i] = rand() % (maxarr_of_resources[i] + 1);
             if (!arr[i])
                 TRACK -= 1;
             save_temp[i] = arr[i];
@@ -225,7 +225,7 @@ void deadlock_detection()
                 arr_involved_in_deadlock[i] = 1;
             }
         }
-        printf("deadlock is %d", deadlock_found);
+        printf("deadlock is %d\n", deadlock_found);
         int to_be_removed = -1;
         if (deadlock_found)
         {
@@ -245,7 +245,7 @@ void deadlock_detection()
             {
                 to_be_removed = heuristics4(arr_involved_in_deadlock);
             }
-            printf("to be removed is %d and deadlock is %d", to_be_removed, deadlock_found);
+            printf("to be removed is %d and deadlock is %d\n", to_be_removed, deadlock_found);
             keep_alive[to_be_removed] = 0;
         }
 
@@ -268,6 +268,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < TOTAL_RESOURCES; i++)
     {
         arr_of_resources[i] = atoi(argv[i + 2]);
+        maxarr_of_resources[i]=arr_of_resources[i];
     }
     TOTAL_THREADS = atoi(argv[TOTAL_RESOURCES + 2]);
     pthread_t arr_thread[TOTAL_THREADS];
