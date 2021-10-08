@@ -228,13 +228,13 @@ int main(int argc, char **argv)
         printf("Invalid input, insufficient command line arguments\n");
         exit(-1);
     }
-    TOTAL_RESOURCES = stoi(argv[1]);
+    TOTAL_RESOURCES = atoi(argv[1]);
     arr_of_resources = (int *)malloc(sizeof(int) * TOTAL_RESOURCES);
     for (int i = 0; i < TOTAL_RESOURCES; i++)
     {
-        arr_of_resources[i] = stoi(argv[i + 2]);
+        arr_of_resources[i] = atoi(argv[i + 2]);
     }
-    TOTAL_THREADS = stoi(argv[TOTAL_RESOURCES + 2]);
+    TOTAL_THREADS = atoi(argv[TOTAL_RESOURCES + 2]);
     pthread_t arr_thread[TOTAL_THREADS];
     requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
     max_requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
@@ -256,5 +256,5 @@ int main(int argc, char **argv)
         
         pthread_create(&arr_thread[i], NULL, P_x, thread_num);
     }
-    TIME_DELAY = stoi(argv[TOTAL_RESOURCES + 3]);
+    TIME_DELAY = atoi(argv[TOTAL_RESOURCES + 3]);
 }
