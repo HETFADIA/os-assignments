@@ -19,7 +19,7 @@ pthread_mutex_t mutex_arr_of_resource = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_deadlock_detection = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_mutex_t mutex_time = PTHREAD_MUTEX_INITIALIZER;
-int TOTAL_RESOURCES, TOTAL_THREADS, TIME_DELAY;
+int MAX_TOTAL_RESOURCES, TOTAL_THREADS, TIME_DELAY;
 int *arr_of_resources;
 int *maxarr_of_resources;
 int *time_stamp;
@@ -52,7 +52,7 @@ int heuristics1(bool *arr_involved_in_deadlock)
     for (int i = 0; i < TOTAL_THREADS; i++)
     {
         pthread_mutex_lock(&mutex_deadlock_detection);
-        int temp_sum = sum(requests[i], TOTAL_RESOURCES);
+        int temp_sum = sum(requests[i], MAX_TOTAL_RESOURCES);
         pthread_mutex_unlock(&mutex_deadlock_detection);
         if (arr_involved_in_deadlock[i] && temp_sum > to_be_removed_sum)
         {
@@ -70,7 +70,7 @@ int heuristics2(bool *arr_involved_in_deadlock)
     for (int i = 0; i < TOTAL_THREADS; i++)
     {
         pthread_mutex_lock(&mutex_deadlock_detection);
-        int temp_sum = sum(max_requests[i], TOTAL_RESOURCES);
+        int temp_sum = sum(max_requests[i], MAX_TOTAL_RESOURCES);
         pthread_mutex_unlock(&mutex_deadlock_detection);
         
         if (arr_involved_in_deadlock[i] && temp_sum > to_be_removed_sum)
@@ -107,7 +107,7 @@ int heuristics4(bool *arr_involved_in_deadlock)
     {
         if (arr_involved_in_deadlock[i])
         {
-            for (int j = 0; j < TOTAL_RESOURCES; j++)
+            for (int j = 0; j < MAX_TOTAL_RESOURCES; j++)
             {
                 pthread_mutex_lock(&mutex_deadlock_detection);
                 int temp=requests[i][j];
@@ -125,7 +125,7 @@ int heuristics4(bool *arr_involved_in_deadlock)
 void *P_x(void *args)
 {
     int thread_num = *((int *)args);
-    int arr[TOTAL_RESOURCES], save_temp[TOTAL_RESOURCES];
+    int arr[MAX_TOTAL_RESOURCES], save_temp[MAX_TOTAL_RESOURCES];
     while (1)
     {
         if(!deadlock_resolved){
@@ -135,8 +135,8 @@ void *P_x(void *args)
         time_stamp[thread_num] = ++time_stamp_counter;
         pthread_mutex_unlock(&mutex_time);
         
-        int TRACK = TOTAL_RESOURCES;
-        for (int i = 0; i < TOTAL_RESOURCES; i++)
+        int TRACK = MAX_TOTAL_RESOURCES;
+        for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
         {
             arr[i] = rand() % (maxarr_of_resources[i] + 1);
             if (!arr[i])
@@ -151,7 +151,7 @@ void *P_x(void *args)
         // TRACK the requirement of resources, if none end looping
         while (TRACK > 0 && keep_alive[thread_num])
         {
-            int resource_for_now = rand() % TOTAL_RESOURCES;
+            int resource_for_now = rand() % MAX_TOTAL_RESOURCES;
 
             if (!arr[resource_for_now])
                 continue;
@@ -188,13 +188,13 @@ void *P_x(void *args)
         //return the resources back
         
         // for(int i=0;i<TOTAL_THREADS;i++){
-        //     for(int j=0;j<TOTAL_RESOURCES;j++){
+        //     for(int j=0;j<MAX_TOTAL_RESOURCES;j++){
         //         printf("%d ",requests[i][j]);
         //     }
         //     printf("\n");
         // }
         // printf("====================\n");
-        // for(int i=0;i<TOTAL_RESOURCES;i++){
+        // for(int i=0;i<MAX_TOTAL_RESOURCES;i++){
         //     printf("%d ",arr_of_resources[i]);
         // }
         // printf("-----------------------\n");
@@ -205,7 +205,7 @@ void *P_x(void *args)
             usleep(temp);
         }
 
-        for (int i = 0; i < TOTAL_RESOURCES; i++)
+        for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
         {
             //mutex lock 2
             pthread_mutex_lock(&mutex_arr_of_resource);
@@ -216,7 +216,7 @@ void *P_x(void *args)
 
 
 
-        for (int i = 0; i < TOTAL_RESOURCES; i++)
+        for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
         {
             pthread_mutex_lock(&mutex_deadlock_detection);
             requests[thread_num][i] = 0;
@@ -234,7 +234,7 @@ void deadlock_detection()
     {
         ++times_deadlock_checked;
         printf("detecting deadlock\n");
-        printf("%d %d %d %d\n", TOTAL_THREADS, TOTAL_RESOURCES, TIME_DELAY, function_no);
+        printf("%d %d %d %d\n", TOTAL_THREADS, MAX_TOTAL_RESOURCES, TIME_DELAY, function_no);
         //run this thread infinitely
 
         //do something, I forgor 
@@ -245,7 +245,7 @@ void deadlock_detection()
         {
             bool ith_thread_can_go = 1;
             arr_involved_in_deadlock[i] = 0;
-            for (int j = 0; j < TOTAL_RESOURCES; j++)
+            for (int j = 0; j < MAX_TOTAL_RESOURCES; j++)
             {
                 pthread_mutex_lock(&mutex_deadlock_detection);
                 bool can_go_inside=arr_of_resources[j] < requests[i][j];
@@ -304,18 +304,20 @@ int main(int argc, char **argv)
     {
         // ./a.out 1 1 5 4
         //./a.out 2 3 4 2 1
-        printf("format of input = a.out || [Maximum number of instances available] || [Maximum number of threads to use in the simulation.] || [Deadlock detection check interval d in seconds.] || [function name for heurestic]|| name of the instances ");
+        printf("format of input = a.out || [Maximum number of instances available] || [Maximum number of threads to use in the simulation.] || [Deadlock detection check interval d in seconds.] || [function name for heurestic]|| name of the instances \n");
         exit(-1);
     }
-    TOTAL_RESOURCES = atoi(argv[1]);
-    arr_of_resources = (int *)malloc(sizeof(int) * TOTAL_RESOURCES);
-    maxarr_of_resources=(int *)malloc(sizeof(int) * TOTAL_RESOURCES);
-    for (int i = 0; i < TOTAL_RESOURCES; i++)
+    MAX_TOTAL_RESOURCES = atoi(argv[1]);
+    TOTAL_THREADS = atoi(argv[2]);
+    TIME_DELAY = atoi(argv[3]);
+    function_no = atoi(argv[ 4]);
+    arr_of_resources = (int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
+    maxarr_of_resources=(int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
+    for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
     {
-        arr_of_resources[i] = atoi(argv[i + 2]);
+        arr_of_resources[i] = atoi(argv[i + 4]);
         maxarr_of_resources[i]=arr_of_resources[i];
     }
-    TOTAL_THREADS = atoi(argv[TOTAL_RESOURCES + 2]);
     pthread_t arr_thread[TOTAL_THREADS];
     requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
     max_requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
@@ -323,13 +325,12 @@ int main(int argc, char **argv)
     time_stamp = (int *)malloc(sizeof(int) * TOTAL_THREADS);
     for (int i = 0; i < TOTAL_THREADS; i++)
     {
-        requests[i] = (int *)malloc(sizeof(int) * TOTAL_RESOURCES);
-        max_requests[i] = (int *)malloc(sizeof(int) * TOTAL_RESOURCES);
+        requests[i] = (int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
+        max_requests[i] = (int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
         keep_alive[i] = 1;
         time_stamp[i] = 0;
     }
-    TIME_DELAY = atoi(argv[TOTAL_RESOURCES + 3]);
-    function_no = atoi(argv[TOTAL_RESOURCES + 4]);
+    
     for (int i = 0; i < TOTAL_THREADS; i++)
     {
         int *thread_num = (int *)malloc(sizeof(int) * 1);
@@ -337,7 +338,7 @@ int main(int argc, char **argv)
 
         pthread_create(&arr_thread[i], NULL, P_x, thread_num);
     }
-    printf("%d %d %d %d %d\n", TOTAL_THREADS, TOTAL_RESOURCES, TIME_DELAY, function_no,function_no);
+    printf("%d %d %d %d %d\n", TOTAL_THREADS, MAX_TOTAL_RESOURCES, TIME_DELAY, function_no,function_no);
     deadlock_detection();
     
 }
