@@ -197,21 +197,21 @@ void *thread_process(void *args)
                 continue;
             }
 
-            //mutex lock part 1
+            int taken;
             pthread_mutex_lock(&mutex_arr_of_resource);
-            int taken = min(arr_of_resources[resource_for_now], arr[resource_for_now]);
+            taken = min(arr_of_resources[resource_for_now], arr[resource_for_now]);
             arr_of_resources[resource_for_now] -= taken;
-            pthread_mutex_unlock(&mutex_arr_of_resource);
-            //mutex unlock
-
             arr[resource_for_now] -= taken;
+            pthread_mutex_unlock(&mutex_arr_of_resource);
+            
+
             pthread_mutex_lock(&mutex_deadlock_detection);
             requests[thread_num][resource_for_now] -= taken;
             pthread_mutex_unlock(&mutex_deadlock_detection);
 
-            if (!arr[resource_for_now])
+            if (arr[resource_for_now]==0)
             {
-                TRACK -= 1;
+                --TRACK;
             }
             sleep(randint(1, TIME_DELAY));
         }
