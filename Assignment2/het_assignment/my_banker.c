@@ -134,7 +134,7 @@ int heuristics4(bool arr_involved_in_deadlock[])
     }
     return to_be_removed;
 }
-void *P_x(void *args)
+void *thread_process(void *args)
 {
     int thread_num = *((int *)args);
     int arr[MAX_TOTAL_RESOURCES], save_temp[MAX_TOTAL_RESOURCES];
@@ -251,17 +251,17 @@ void deadlock_detection()
                 pthread_mutex_unlock(&mutex_deadlock_detection);
                 if (can_go_inside)
                 {
-                    ith_thread_can_go = 0;
+                    ith_thread_can_go = false;
                     break;
                 }
             }
             if (ith_thread_can_go)
             {
-                deadlock_found = 0;
+                deadlock_found = false;
             }
             else
             {
-                arr_involved_in_deadlock[i] = 1;
+                arr_involved_in_deadlock[i] = true;
             }
         }
         if(deadlock_found==0){
@@ -309,10 +309,14 @@ signed main(int argc, char **argv)
 {
     if (argc < 6)
     {
-        /*
-        gcc main.c -lpthread
-        ./a.out 2 20 1 1 13 17
-        */
+/*
+gcc main.c -lpthread
+./a.out 2 20 1 1 13 17
+*/
+/*
+gcc main.c -lpthread
+./a.out 2 2 1 1 13 17
+*/
         printf("format of input = a.out || [Maximum number of instances available] || [Maximum number of threads to use in the simulation.] || [Deadlock detection check interval d in seconds.] || [function name for heurestic]|| name of the instances \n");
         exit(-1);
     }
@@ -357,7 +361,7 @@ signed main(int argc, char **argv)
     {
         int *thread_num = (int *)malloc(sizeof(int));
         *thread_num = i;
-        pthread_create(&arr_thread[i], NULL, P_x, thread_num);
+        pthread_create(&arr_thread[i], NULL, thread_process, thread_num);
     }
     printf("Threads=%d\n", TOTAL_THREADS);
     printf("Total resources=%d\n",MAX_TOTAL_RESOURCES);
