@@ -56,7 +56,7 @@ void sleep_for_decided(int d){
     usleep(select*d);
 }
 
-int heuristics1(bool *arr_involved_in_deadlock)
+int heuristics1(bool arr_involved_in_deadlock[])
 {
     //selects the resource having max sum of resources needed(max(sum(needed resources)))
     int to_be_removed = 0;
@@ -74,7 +74,7 @@ int heuristics1(bool *arr_involved_in_deadlock)
     }
     return to_be_removed;
 }
-int heuristics2(bool *arr_involved_in_deadlock)
+int heuristics2(bool arr_involved_in_deadlock[])
 {
     //selects the resource having max sum of resources max_needed(max(sum(max_needed)))
     int to_be_removed = 0;
@@ -93,7 +93,7 @@ int heuristics2(bool *arr_involved_in_deadlock)
     }
     return to_be_removed;
 }
-int heuristics3(bool *arr_involved_in_deadlock)
+int heuristics3(bool arr_involved_in_deadlock[])
 {
     //selects youngest thread i.e. having max time_stamp
     int to_be_removed = 0;
@@ -110,7 +110,7 @@ int heuristics3(bool *arr_involved_in_deadlock)
     return to_be_removed;
 }
 
-int heuristics4(bool *arr_involved_in_deadlock)
+int heuristics4(bool arr_involved_in_deadlock[])
 {
     //selects max resource
     int to_be_removed = 0;
@@ -197,30 +197,7 @@ void *P_x(void *args)
             }
             sleep(randint(1,TIME_DELAY));
         }
-        // if(keep_alive[thread_num]==0){
-        //     sleep(5);
-        // }
         
-        // sleep for (0.7d, 1.5d);
-        
-        // int theta=rand()%1000+1;
-        // printf("the int no =========%d",theta);
-        // sleep(rand() % TIME_DELAY + 1);
-        // run thread again like normal people
-
-        //return the resources back
-        
-        // for(int i=0;i<TOTAL_THREADS;i++){
-        //     for(int j=0;j<MAX_TOTAL_RESOURCES;j++){
-        //         printf("%d ",requests[i][j]);
-        //     }
-        //     printf("\n");
-        // }
-        // printf("====================\n");
-        // for(int i=0;i<MAX_TOTAL_RESOURCES;i++){
-        //     printf("%d ",arr_of_resources[i]);
-        // }
-        // printf("-----------------------\n");
         pthread_mutex_lock(&mutex_keep_alive);
         int should_sleep_be_given=keep_alive[thread_num]==1;
         pthread_mutex_unlock(&mutex_keep_alive);
@@ -290,7 +267,13 @@ void deadlock_detection()
                 arr_involved_in_deadlock[i] = 1;
             }
         }
-        printf("deadlock is %d\n", deadlock_found);
+        if(deadlock_found==0){
+            printf("Deadlock was not found\n");
+        }
+        else{
+            printf("We found the deadlock\n");
+        }
+        
         int to_be_removed = -1;
         deadlock_resolved=!deadlock_found;
         if (deadlock_found)
@@ -312,14 +295,13 @@ void deadlock_detection()
             {
                 to_be_removed = heuristics4(arr_involved_in_deadlock);
             }
-            printf("///////////////to be removed is %d\n", to_be_removed);
             pthread_mutex_lock(&mutex_keep_alive);
             keep_alive[to_be_removed] = 0;
             pthread_mutex_unlock(&mutex_keep_alive);
             
             
-            // sleep(10);
-            // printf("sleeping due to deadlock=========");
+            printf("WE SKIPPED AND QUEUED THE PROCESS AT %dth THREAD\n", to_be_removed);
+            
         }
 
         sleep(TIME_DELAY);
@@ -330,8 +312,10 @@ signed main(int argc, char **argv)
 {
     if (argc < 6)
     {
-        // ./a.out 1 1 5 4
-        //./a.out 2 3 4 2 1
+        /*
+        gcc main.c -lpthread
+        ./a.out 2 20 1 1 13 17
+        */
         printf("format of input = a.out || [Maximum number of instances available] || [Maximum number of threads to use in the simulation.] || [Deadlock detection check interval d in seconds.] || [function name for heurestic]|| name of the instances \n");
         exit(-1);
     }
