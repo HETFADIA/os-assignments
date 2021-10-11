@@ -308,7 +308,20 @@ int main(int argc, char **argv)
         exit(-1);
     }
     MAX_TOTAL_RESOURCES = atoi(argv[1]);
+    if(MAX_TOTAL_RESOURCES==0){
+        printf("Please provide at least 1 max instance\n");
+        exit(-1);
+    }
+    if(MAX_TOTAL_RESOURCES+5!=argc){
+        printf("incorrect input format\n");
+        printf("The no of max instances is incorrect\n");
+        exit(-1);
+    }
     TOTAL_THREADS = atoi(argv[2]);
+    if(TOTAL_THREADS==0){
+        printf("Please provide at least 1 thread\n");
+        exit(-1);
+    }
     TIME_DELAY = atoi(argv[3]);
     function_no = atoi(argv[ 4]);
     arr_of_resources = (int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
@@ -335,7 +348,6 @@ int main(int argc, char **argv)
     {
         int *thread_num = (int *)malloc(sizeof(int));
         *thread_num = i;
-
         pthread_create(&arr_thread[i], NULL, P_x, thread_num);
     }
     printf("Threads=%d\n", TOTAL_THREADS);
