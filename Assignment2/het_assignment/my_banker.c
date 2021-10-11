@@ -153,7 +153,7 @@ void *thread_process(void *args)
     int arr[MAX_TOTAL_RESOURCES], save_temp[MAX_TOTAL_RESOURCES];
     while (true)
     {
-        if (!deadlock_resolved)
+        if (deadlock_resolved==0)
         {
             continue;
         }
