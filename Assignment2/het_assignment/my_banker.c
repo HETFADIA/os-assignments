@@ -29,7 +29,7 @@ bool *keep_alive;
 int **requests;
 int **max_requests;
 int function_no=1;
-bool deadlock_resolved=1;
+bool deadlock_resolved=true;
 int sum(int arr[], int len)
 {
     int res = 0;
@@ -235,17 +235,14 @@ void deadlock_detection()
     while (1)
     {
         ++times_deadlock_checked;
-        printf("detecting deadlock\n");
-        printf("%d %d %d %d\n", TOTAL_THREADS, MAX_TOTAL_RESOURCES, TIME_DELAY, function_no);
-        //run this thread infinitely
-
-        //do something, I forgor 
-        bool deadlock_found = 1;
+        printf("Detecting deadlock ....\n");
+        
+        bool deadlock_found = true;
         bool arr_involved_in_deadlock[TOTAL_THREADS];
 
         for (int i = 0; i < TOTAL_THREADS; i++)
         {
-            bool ith_thread_can_go = 1;
+            bool ith_thread_can_go = true;
             arr_involved_in_deadlock[i] = 0;
             for (int j = 0; j < MAX_TOTAL_RESOURCES; j++)
             {
@@ -268,10 +265,10 @@ void deadlock_detection()
             }
         }
         if(deadlock_found==0){
-            printf("Deadlock was not found\n");
+            printf("Deadlock was not found this time\n");
         }
         else{
-            printf("We found the deadlock\n");
+            printf("Deadlock found\n");
         }
         
         int to_be_removed = -1;
