@@ -237,7 +237,7 @@ void deadlock_detection()
         printf("%d %d %d %d\n", TOTAL_THREADS, TOTAL_RESOURCES, TIME_DELAY, function_no);
         //run this thread infinitely
 
-        //do something, I forgor 💀
+        //do something, I forgor 
         bool deadlock_found = 1;
         bool arr_involved_in_deadlock[TOTAL_THREADS];
 
