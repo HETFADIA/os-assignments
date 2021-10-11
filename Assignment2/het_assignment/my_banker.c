@@ -30,6 +30,15 @@ int **requests;
 int **max_requests;
 int function_no=1;
 bool deadlock_resolved=1;
+int sum(int arr[], int len)
+{
+    int res = 0;
+    int i=0;
+    while(i<len){
+        res+=arr[i++];
+    }
+    return res;
+}
 int min(int x,int y){
     return x<y?x:y;
 }
@@ -46,15 +55,7 @@ void sleep_for_decided(int d){
     int select=(700000+rand()%800000);//selects random time (0.7d,1.5d)
     usleep(select*d);
 }
-int sum(int arr[], int len)
-{
-    int res = 0;
-    int i=0;
-    while(i<len){
-        res+=arr[i++];
-    }
-    return res;
-}
+
 int heuristics1(bool *arr_involved_in_deadlock)
 {
     //selects the resource having max sum of resources needed(max(sum(needed resources)))
