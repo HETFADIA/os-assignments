@@ -137,7 +137,7 @@ void *thread_process(void *args)
 {
     int thread_num = *((int *)args);
     int arr[MAX_TOTAL_RESOURCES], save_temp[MAX_TOTAL_RESOURCES];
-    while (1)
+    while (true)
     {
         if(!deadlock_resolved){
             continue;
@@ -231,7 +231,7 @@ int times_deadlock_found=0;
 int times_deadlock_checked=0;
 void deadlock_detection()
 {
-    while (1)
+    while (true)
     {
         ++times_deadlock_checked;
         printf("Detecting deadlock ....\n");
