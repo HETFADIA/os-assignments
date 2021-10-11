@@ -1,0 +1,1 @@
+"format of input = a.out || [Maximum number of instances available] || [Maximum number of threads to use in the simulation.] || [Deadlock detection check interval d in seconds.] || [function name for heurestic]|| name of the instances "

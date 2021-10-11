@@ -304,7 +304,7 @@ int main(int argc, char **argv)
     {
         // ./a.out 1 1 5 4
         //./a.out 2 3 4 2 1
-        printf("Invalid input, insufficient command line arguments\n");
+        printf("format of input = a.out || [Maximum number of instances available] || [Maximum number of threads to use in the simulation.] || [Deadlock detection check interval d in seconds.] || [function name for heurestic]|| name of the instances ");
         exit(-1);
     }
     TOTAL_RESOURCES = atoi(argv[1]);
