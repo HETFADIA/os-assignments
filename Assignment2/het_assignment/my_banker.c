@@ -333,12 +333,15 @@ int main(int argc, char **argv)
     
     for (int i = 0; i < TOTAL_THREADS; i++)
     {
-        int *thread_num = (int *)malloc(sizeof(int) * 1);
+        int *thread_num = (int *)malloc(sizeof(int));
         *thread_num = i;
 
         pthread_create(&arr_thread[i], NULL, P_x, thread_num);
     }
-    printf("%d %d %d %d %d\n", TOTAL_THREADS, MAX_TOTAL_RESOURCES, TIME_DELAY, function_no,function_no);
+    printf("Threads=%d\n", TOTAL_THREADS);
+    printf("Total resources=%d\n",MAX_TOTAL_RESOURCES);
+    printf("Time delay= %ds\n",TIME_DELAY);
+    printf("Function no= %d\n",function_no);
     deadlock_detection();
     
 }
