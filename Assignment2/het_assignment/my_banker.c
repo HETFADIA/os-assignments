@@ -150,7 +150,7 @@ void *P_x(void *args)
         int TRACK = MAX_TOTAL_RESOURCES;
         for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
         {
-            arr[i] = rand() % (maxarr_of_resources[i] + 1);
+            arr[i]=randrange(0,maxarr_of_resources[i] + 1);
             if (!arr[i])
                 TRACK -= 1;
             save_temp[i] = arr[i];
@@ -324,7 +324,7 @@ void deadlock_detection()
     }
 }
 
-int main(int argc, char **argv)
+signed main(int argc, char **argv)
 {
     if (argc < 6)
     {
