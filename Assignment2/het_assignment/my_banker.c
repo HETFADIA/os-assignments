@@ -20,6 +20,7 @@ pthread_mutex_t mutex_arr_of_resource = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_deadlock_detection = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_keep_alive = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_time = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_time_stamp = PTHREAD_MUTEX_INITIALIZER;
 int MAX_TOTAL_RESOURCES;
 int TOTAL_THREADS;
 int TIME_DELAY;
@@ -109,11 +110,13 @@ int heuristics3(bool arr_involved_in_deadlock[])
     int i = 0;
     for (i = 0; i < TOTAL_THREADS; ++i)
     {
-
-        if (arr_involved_in_deadlock[i] && time_stamp[i] > to_be_removed_time)
+        pthread_mutex_lock(&mutex_time_stamp);
+        int ts=time_stamp[i];
+        pthread_mutex_unlock(&mutex_time_stamp);
+        if (arr_involved_in_deadlock[i] && ts > to_be_removed_time)
         {
             to_be_removed = i;
-            to_be_removed_time = time_stamp[i];
+            to_be_removed_time = ts;
         }
     }
     return to_be_removed;
