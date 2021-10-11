@@ -29,11 +29,21 @@ int **requests;
 int **max_requests;
 int function_no=1;
 bool deadlock_resolved=1;
-int min(int x, int y)
-{
-    if (x < y)
-        return x;
-    return y;
+int min(int x,int y){
+    return x<y?x:y;
+}
+int max(int x,int y){
+    return x>y?x:y;
+}
+int randint(int x,int y){
+    return x+ rand()%(y-x+1);
+}
+int randrange(int x,int y){
+    return x+ rand()%(y-x);
+}
+void sleep_for_decided(int d){
+    int select=1000*(700+rand()%800);//selects random time (0.7d,1.5d)
+    usleep(select*d);
 }
 int sum(int *arr, int len)
 {
