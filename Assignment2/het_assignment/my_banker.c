@@ -370,12 +370,12 @@ gcc main.c -lpthread
         }       
         
     }
-    
+    int * thread_num[TOTAL_THREADS];
     for (int i = 0; i < TOTAL_THREADS; ++i)
     {
-        int *thread_num = (int *)malloc(sizeof(int));
-        *thread_num = i;
-        pthread_create(&arr_thread[i], NULL, thread_process, thread_num);
+        thread_num[i] = (int *)malloc(sizeof(int));
+        *thread_num[i] = i;
+        pthread_create(&arr_thread[i], NULL, thread_process, thread_num[i]);
     }
     printf("Threads=%d\n", TOTAL_THREADS);
     printf("Total resources=%d\n",MAX_TOTAL_RESOURCES);
