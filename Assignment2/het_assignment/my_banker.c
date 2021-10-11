@@ -19,7 +19,6 @@
 pthread_mutex_t mutex_arr_of_resource = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_deadlock_detection = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_keep_alive = PTHREAD_MUTEX_INITIALIZER;
-
 pthread_mutex_t mutex_time = PTHREAD_MUTEX_INITIALIZER;
 int MAX_TOTAL_RESOURCES, TOTAL_THREADS, TIME_DELAY;
 int *arr_of_resources;
@@ -172,7 +171,9 @@ void *P_x(void *args)
             if(break_from_loop){
                 break;
             }
-            int resource_for_now = rand() % MAX_TOTAL_RESOURCES;
+            
+            int resource_for_now = randint(0,MAX_TOTAL_RESOURCES);
+            
 
             if (!arr[resource_for_now])
                 continue;
@@ -193,7 +194,7 @@ void *P_x(void *args)
             {
                 TRACK -= 1;
             }
-            sleep(rand() % TIME_DELAY + 1);
+            sleep(randint(1,TIME_DELAY));
         }
         // if(keep_alive[thread_num]==0){
         //     sleep(5);
