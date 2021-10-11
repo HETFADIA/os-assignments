@@ -20,16 +20,15 @@ pthread_mutex_t mutex_arr_of_resource = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_deadlock_detection = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_keep_alive = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_time = PTHREAD_MUTEX_INITIALIZER;
-int MAX_TOTAL_RESOURCES, TOTAL_THREADS, TIME_DELAY;
-int *arr_of_resources;
-int *maxarr_of_resources;
-int *time_stamp;
+int MAX_TOTAL_RESOURCES;
+int TOTAL_THREADS;
+int TIME_DELAY;
 int time_stamp_counter = 0;
-bool *keep_alive;
-int **requests;
-int **max_requests;
 int function_no=1;
 bool deadlock_resolved=true;
+int *arr_of_resources, *maxarr_of_resources, *time_stamp;
+bool *keep_alive;
+int **requests, **max_requests;
 int sum(int arr[], int len)
 {
     int res = 0;
@@ -265,7 +264,7 @@ void deadlock_detection()
             }
         }
         if(deadlock_found==0){
-            printf("Deadlock was not found this time\n");
+            printf("DEADLOCK NOT FOUND\n");
         }
         else{
             printf("Deadlock found\n");
