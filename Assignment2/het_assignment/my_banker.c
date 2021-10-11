@@ -34,7 +34,8 @@ int sum(int arr[], int len)
     int res = 0;
     int i=0;
     while(i<len){
-        res+=arr[i++];
+        res+=arr[i];
+        ++i;
     }
     return res;
 }
@@ -60,7 +61,7 @@ int heuristics1(bool arr_involved_in_deadlock[])
     //selects the resource having max sum of resources needed(max(sum(needed resources)))
     int to_be_removed = 0;
     int to_be_removed_sum = -1;
-    for (int i = 0; i < TOTAL_THREADS; i++)
+    for (int i = 0; i < TOTAL_THREADS; ++i)
     {
         pthread_mutex_lock(&mutex_deadlock_detection);
         int temp_sum = sum(requests[i], MAX_TOTAL_RESOURCES);
@@ -78,7 +79,7 @@ int heuristics2(bool arr_involved_in_deadlock[])
     //selects the resource having max sum of resources max_needed(max(sum(max_needed)))
     int to_be_removed = 0;
     int to_be_removed_sum = -1;
-    for (int i = 0; i < TOTAL_THREADS; i++)
+    for (int i = 0; i < TOTAL_THREADS; ++i)
     {
         pthread_mutex_lock(&mutex_deadlock_detection);
         int temp_sum = sum(max_requests[i], MAX_TOTAL_RESOURCES);
@@ -97,7 +98,7 @@ int heuristics3(bool arr_involved_in_deadlock[])
     //selects youngest thread i.e. having max time_stamp
     int to_be_removed = 0;
     int to_be_removed_time = -1;
-    for (int i = 0; i < TOTAL_THREADS; i++)
+    for (int i = 0; i < TOTAL_THREADS; ++i)
     {
 
         if (arr_involved_in_deadlock[i] && time_stamp[i] > to_be_removed_time)
@@ -114,11 +115,11 @@ int heuristics4(bool arr_involved_in_deadlock[])
     //selects max resource
     int to_be_removed = 0;
     int to_be_removed_value = -1;
-    for (int i = 0; i < TOTAL_THREADS; i++)
+    for (int i = 0; i < TOTAL_THREADS; ++i)
     {
         if (arr_involved_in_deadlock[i])
         {
-            for (int j = 0; j < MAX_TOTAL_RESOURCES; j++)
+            for (int j = 0; j < MAX_TOTAL_RESOURCES; ++j)
             {
                 pthread_mutex_lock(&mutex_deadlock_detection);
                 int temp=requests[i][j];
@@ -147,7 +148,7 @@ void *thread_process(void *args)
         pthread_mutex_unlock(&mutex_time);
         
         int TRACK = MAX_TOTAL_RESOURCES;
-        for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
+        for (int i = 0; i < MAX_TOTAL_RESOURCES; ++i)
         {
             arr[i]=randrange(0,maxarr_of_resources[i] + 1);
             if (!arr[i]){
@@ -205,7 +206,7 @@ void *thread_process(void *args)
             sleep_for_decided(TIME_DELAY);
         }
 
-        for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
+        for (int i = 0; i < MAX_TOTAL_RESOURCES; ++i)
         {
             //mutex lock 2
             pthread_mutex_lock(&mutex_arr_of_resource);
@@ -216,7 +217,7 @@ void *thread_process(void *args)
 
 
 
-        for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
+        for (int i = 0; i < MAX_TOTAL_RESOURCES; ++i)
         {
             pthread_mutex_lock(&mutex_deadlock_detection);
             requests[thread_num][i] = 0;
@@ -242,11 +243,11 @@ void deadlock_detection()
         for(int i=0;i<TOTAL_THREADS;++i){
             arr_involved_in_deadlock[i] = false;
         }
-        for (int i = 0; i < TOTAL_THREADS; i++)
+        for (int i = 0; i < TOTAL_THREADS; ++i)
         {
             bool ith_thread_can_go = true;
             
-            for (int j = 0; j < MAX_TOTAL_RESOURCES; j++)
+            for (int j = 0; j < MAX_TOTAL_RESOURCES; ++j)
             {
                 pthread_mutex_lock(&mutex_deadlock_detection);
                 bool can_go_inside=arr_of_resources[j] < requests[i][j];
@@ -341,7 +342,7 @@ gcc main.c -lpthread
     function_no = atoi(argv[ 4]);
     arr_of_resources = (int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
     maxarr_of_resources=(int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
-    for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
+    for (int i = 0; i < MAX_TOTAL_RESOURCES; ++i)
     {
         arr_of_resources[i] = atoi(argv[i + 4]);
         maxarr_of_resources[i]=arr_of_resources[i];
@@ -351,7 +352,7 @@ gcc main.c -lpthread
     max_requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
     keep_alive = (bool *)malloc(sizeof(bool) * TOTAL_THREADS);
     time_stamp = (int *)malloc(sizeof(int) * TOTAL_THREADS);
-    for (int i = 0; i < TOTAL_THREADS; i++)
+    for (int i = 0; i < TOTAL_THREADS; ++i)
     {
         requests[i] = (int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
         max_requests[i] = (int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
@@ -359,7 +360,7 @@ gcc main.c -lpthread
         time_stamp[i] = 0;
     }
     
-    for (int i = 0; i < TOTAL_THREADS; i++)
+    for (int i = 0; i < TOTAL_THREADS; ++i)
     {
         int *thread_num = (int *)malloc(sizeof(int));
         *thread_num = i;
