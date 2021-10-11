@@ -46,12 +46,12 @@ void sleep_for_decided(int d){
     int select=(700000+rand()%800000);//selects random time (0.7d,1.5d)
     usleep(select*d);
 }
-int sum(int *arr, int len)
+int sum(int arr[], int len)
 {
     int res = 0;
-    for (int i = 0; i < len; i++)
-    {
-        res += arr[i];
+    int i=0;
+    while(i<len){
+        res+=arr[i++];
     }
     return res;
 }
