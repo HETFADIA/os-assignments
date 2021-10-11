@@ -61,7 +61,8 @@ int heuristics1(bool arr_involved_in_deadlock[])
     //selects the resource having max sum of resources needed(max(sum(needed resources)))
     int to_be_removed = 0;
     int to_be_removed_sum = -1;
-    for (int i = 0; i < TOTAL_THREADS; ++i)
+    int i=0;
+    for (i = 0; i < TOTAL_THREADS; ++i)
     {
         pthread_mutex_lock(&mutex_deadlock_detection);
         int temp_sum = sum(requests[i], MAX_TOTAL_RESOURCES);
@@ -79,7 +80,8 @@ int heuristics2(bool arr_involved_in_deadlock[])
     //selects the resource having max sum of resources max_needed(max(sum(max_needed)))
     int to_be_removed = 0;
     int to_be_removed_sum = -1;
-    for (int i = 0; i < TOTAL_THREADS; ++i)
+    int i=0;
+    for (i = 0; i < TOTAL_THREADS; ++i)
     {
         pthread_mutex_lock(&mutex_deadlock_detection);
         int temp_sum = sum(max_requests[i], MAX_TOTAL_RESOURCES);
@@ -98,7 +100,8 @@ int heuristics3(bool arr_involved_in_deadlock[])
     //selects youngest thread i.e. having max time_stamp
     int to_be_removed = 0;
     int to_be_removed_time = -1;
-    for (int i = 0; i < TOTAL_THREADS; ++i)
+    int i=0;
+    for (i = 0; i < TOTAL_THREADS; ++i)
     {
 
         if (arr_involved_in_deadlock[i] && time_stamp[i] > to_be_removed_time)
@@ -115,7 +118,8 @@ int heuristics4(bool arr_involved_in_deadlock[])
     //selects max resource
     int to_be_removed = 0;
     int to_be_removed_value = -1;
-    for (int i = 0; i < TOTAL_THREADS; ++i)
+    int i=0;
+    for (i = 0; i < TOTAL_THREADS; ++i)
     {
         if (arr_involved_in_deadlock[i])
         {
@@ -177,8 +181,9 @@ void *thread_process(void *args)
             int resource_for_now = randint(0,MAX_TOTAL_RESOURCES);
             
 
-            if (!arr[resource_for_now])
+            if (!arr[resource_for_now]){
                 continue;
+            }
 
             //mutex lock part 1
             pthread_mutex_lock(&mutex_arr_of_resource);
