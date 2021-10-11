@@ -192,7 +192,7 @@ void *thread_process(void *args)
 
             int resource_for_now = randint(0, MAX_TOTAL_RESOURCES);
 
-            if (!arr[resource_for_now])
+            if (arr[resource_for_now]==0)
             {
                 continue;
             }
