@@ -15,8 +15,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <math.h>
 pthread_mutex_t mutex_arr_of_resource = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_deadlock_detection = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_keep_alive = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_mutex_t mutex_time = PTHREAD_MUTEX_INITIALIZER;
 int MAX_TOTAL_RESOURCES, TOTAL_THREADS, TIME_DELAY;
@@ -42,7 +44,7 @@ int randrange(int x,int y){
     return x+ rand()%(y-x);
 }
 void sleep_for_decided(int d){
-    int select=1000*(700+rand()%800);//selects random time (0.7d,1.5d)
+    int select=(700000+rand()%800000);//selects random time (0.7d,1.5d)
     usleep(select*d);
 }
 int sum(int *arr, int len)
@@ -157,10 +159,19 @@ void *P_x(void *args)
             max_requests[thread_num][i] = save_temp[i];
             pthread_mutex_unlock(&mutex_deadlock_detection);
         }
+        pthread_mutex_lock(&mutex_keep_alive);
         keep_alive[thread_num] = 1;
+        pthread_mutex_unlock(&mutex_keep_alive);
+        
         // TRACK the requirement of resources, if none end looping
-        while (TRACK > 0 && keep_alive[thread_num])
+        while (TRACK > 0)
         {
+            pthread_mutex_lock(&mutex_keep_alive);
+            int break_from_loop=keep_alive[thread_num]==0;
+            pthread_mutex_unlock(&mutex_keep_alive);
+            if(break_from_loop){
+                break;
+            }
             int resource_for_now = rand() % MAX_TOTAL_RESOURCES;
 
             if (!arr[resource_for_now])
@@ -208,11 +219,11 @@ void *P_x(void *args)
         //     printf("%d ",arr_of_resources[i]);
         // }
         // printf("-----------------------\n");
-        if(keep_alive[thread_num]==1){
-
-            float temp=(7 * (TIME_DELAY* 1e5) + rand() % (TIME_DELAY * (int)1e5) * 8);
-            printf("the float no ==========%f\n",temp);
-            usleep(temp);
+        pthread_mutex_lock(&mutex_keep_alive);
+        int should_sleep_be_given=keep_alive[thread_num]==1;
+        pthread_mutex_unlock(&mutex_keep_alive);
+        if(should_sleep_be_given){
+            sleep_for_decided(TIME_DELAY);
         }
 
         for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
@@ -232,7 +243,9 @@ void *P_x(void *args)
             requests[thread_num][i] = 0;
             pthread_mutex_unlock(&mutex_deadlock_detection);
         }
+        pthread_mutex_lock(&mutex_keep_alive);
         keep_alive[thread_num] = 1;
+        pthread_mutex_unlock(&mutex_keep_alive);
     }
     return NULL;
 }
@@ -298,7 +311,10 @@ void deadlock_detection()
                 to_be_removed = heuristics4(arr_involved_in_deadlock);
             }
             printf("///////////////to be removed is %d\n", to_be_removed);
+            pthread_mutex_lock(&mutex_keep_alive);
             keep_alive[to_be_removed] = 0;
+            pthread_mutex_unlock(&mutex_keep_alive);
+            
             
             // sleep(10);
             // printf("sleeping due to deadlock=========");
