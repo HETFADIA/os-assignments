@@ -28,7 +28,7 @@ int function_no=1;
 bool deadlock_resolved=true;
 int arr_of_resources[1000], maxarr_of_resources[1000], time_stamp[1000];
 bool keep_alive[1000];
-int **requests, **max_requests;
+int requests[1000][1000], max_requests[1000][1000];
 int sum(int arr[], int len)
 {
     int res = 0;
@@ -359,15 +359,15 @@ gcc main.c -lpthread
         maxarr_of_resources[i]=arr_of_resources[i];
     }
     pthread_t arr_thread[TOTAL_THREADS];
-    requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
-    max_requests = (int **)malloc(sizeof(int *) * TOTAL_THREADS);
+    
     
     
     for (int i = 0; i < TOTAL_THREADS; ++i)
     {
-        requests[i] = (int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
-        max_requests[i] = (int *)malloc(sizeof(int) * MAX_TOTAL_RESOURCES);
-        
+        for(int j=0;j<MAX_TOTAL_RESOURCES;++j){
+            requests[i][j]=0;
+            max_requests[i][j]=0;
+        }       
         
     }
     
