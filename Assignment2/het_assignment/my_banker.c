@@ -150,8 +150,9 @@ void *thread_process(void *args)
         for (int i = 0; i < MAX_TOTAL_RESOURCES; i++)
         {
             arr[i]=randrange(0,maxarr_of_resources[i] + 1);
-            if (!arr[i])
-                TRACK -= 1;
+            if (!arr[i]){
+                --TRACK;
+            }
             save_temp[i] = arr[i];
             pthread_mutex_lock(&mutex_deadlock_detection);
             requests[thread_num][i] = arr[i];
@@ -166,7 +167,7 @@ void *thread_process(void *args)
         while (TRACK > 0)
         {
             pthread_mutex_lock(&mutex_keep_alive);
-            int break_from_loop=keep_alive[thread_num]==0;
+            int break_from_loop=keep_alive[thread_num]==false;
             pthread_mutex_unlock(&mutex_keep_alive);
             if(break_from_loop){
                 break;
@@ -238,11 +239,13 @@ void deadlock_detection()
         
         bool deadlock_found = true;
         bool arr_involved_in_deadlock[TOTAL_THREADS];
-
+        for(int i=0;i<TOTAL_THREADS;++i){
+            arr_involved_in_deadlock[i] = false;
+        }
         for (int i = 0; i < TOTAL_THREADS; i++)
         {
             bool ith_thread_can_go = true;
-            arr_involved_in_deadlock[i] = 0;
+            
             for (int j = 0; j < MAX_TOTAL_RESOURCES; j++)
             {
                 pthread_mutex_lock(&mutex_deadlock_detection);
@@ -263,7 +266,7 @@ void deadlock_detection()
                 arr_involved_in_deadlock[i] = true;
             }
         }
-        if(deadlock_found==0){
+        if(deadlock_found==false){
             printf("DEADLOCK NOT FOUND\n");
         }
         else{
@@ -292,7 +295,7 @@ void deadlock_detection()
                 to_be_removed = heuristics4(arr_involved_in_deadlock);
             }
             pthread_mutex_lock(&mutex_keep_alive);
-            keep_alive[to_be_removed] = 0;
+            keep_alive[to_be_removed] = false;
             pthread_mutex_unlock(&mutex_keep_alive);
             
             
