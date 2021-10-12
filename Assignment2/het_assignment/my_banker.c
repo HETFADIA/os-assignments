@@ -487,7 +487,7 @@ void unit_test()
     fp=fopen("data.txt","w");
     for(int i=1;i<=4;++i){
         function_no=i;
-        fprintf(fp,"We check deadlock for %d\n",times_deadlock_checked[function_no-1]);
+        fprintf(fp,"We check deadlock for %d\n times",times_deadlock_checked[function_no-1]);
         fprintf(fp,"And the deadlock occured for %d time(s)\n",times_deadlock_found[function_no-1]);
         if(times_deadlock_found[function_no-1]){
             float deadlock_occurs_after=(float)times_deadlock_checked[function_no-1]/times_deadlock_found[function_no-1];
