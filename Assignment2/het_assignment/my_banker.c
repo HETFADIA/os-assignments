@@ -250,6 +250,22 @@ void *thread_process(void *args)
 }
 int times_deadlock_found = 0;
 int times_deadlock_checked = 0;
+int call_heuristic(int switcher,bool arr_involved_in_deadlock[]){
+    int res=-1;
+    if(switcher==1){
+        return heuristics1(arr_involved_in_deadlock);
+    }
+    else if(switcher==2){
+        return heuristics2(arr_involved_in_deadlock);
+    }
+    else if(switcher==3){
+        return  heuristics3(arr_involved_in_deadlock);
+    }
+    else if(switcher==4){
+        return heuristics4(arr_involved_in_deadlock);
+    }
+    return res;
+}
 void deadlock_detection()
 {
     while (true)
@@ -301,22 +317,7 @@ void deadlock_detection()
         if (deadlock_found)
         {
             ++times_deadlock_found;
-            if (function_no == 1)
-            {
-                to_be_removed = heuristics1(arr_involved_in_deadlock);
-            }
-            else if (function_no == 2)
-            {
-                to_be_removed = heuristics2(arr_involved_in_deadlock);
-            }
-            else if (function_no == 3)
-            {
-                to_be_removed = heuristics3(arr_involved_in_deadlock);
-            }
-            else if (function_no == 4)
-            {
-                to_be_removed = heuristics4(arr_involved_in_deadlock);
-            }
+            to_be_removed=call_heuristic(function_no,arr_involved_in_deadlock);
             pthread_mutex_lock(&mutex_keep_alive);
             keep_alive[to_be_removed] = false;
             pthread_mutex_unlock(&mutex_keep_alive);
