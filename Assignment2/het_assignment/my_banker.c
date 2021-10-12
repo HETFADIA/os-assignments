@@ -30,6 +30,7 @@ bool deadlock_resolved = true;
 int arr_of_resources[1000], maxarr_of_resources[1000], time_stamp[1000];
 bool keep_alive[1000];
 int requests[1000][1000], max_requests[1000][1000];
+int testing=0;
 int sum(int arr[], int len)
 {
     int res = 0;
@@ -340,7 +341,7 @@ void deadlock_detection()
     }
 }
 void unit_test();
-int testing=0;
+
 signed main(int argc, char **argv)
 {
     
@@ -482,14 +483,16 @@ void unit_test()
             printf("The time delay is %f seconds\n",deadlock_occurs_after);
         }
     }
+    FILE * fp;
+    fp=fopen("data.txt","w");
     for(int i=1;i<=4;++i){
         function_no=i;
-        printf("\n\nWe check deadlock for %d\n",times_deadlock_checked[function_no-1]);
-        printf("And the deadlock occured for %d time(s)\n",times_deadlock_found[function_no-1]);
+        fprintf(fp,"We check deadlock for %d\n",times_deadlock_checked[function_no-1]);
+        fprintf(fp,"And the deadlock occured for %d time(s)\n",times_deadlock_found[function_no-1]);
         if(times_deadlock_found[function_no-1]){
             float deadlock_occurs_after=(float)times_deadlock_checked[function_no-1]/times_deadlock_found[function_no-1];
             deadlock_occurs_after*=TIME_DELAY;
-            printf("The time delay is %f seconds\n",deadlock_occurs_after);
+            fprintf(fp,"The time delay is %f seconds\n",deadlock_occurs_after);
         }
     }
 }
