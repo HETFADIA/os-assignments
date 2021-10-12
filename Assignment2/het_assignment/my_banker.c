@@ -272,14 +272,20 @@ void *thread_process(void *args)
 int times_deadlock_found[4];
 int times_deadlock_checked[4];
 int times_to_be_checked=5;
-void deadlock_detection()
+void* deadlock_detection(void * arg)
 {
     int counter = 0;
     while (true)
     {
-        if (counter == times_to_be_checked && testing)
+        if (counter == times_to_be_checked)
         {
-            return;
+            if(testing){
+
+                break;
+            }
+            else{
+                
+            }
         }
         ++counter;
         ++times_deadlock_checked[function_no - 1];
@@ -339,6 +345,7 @@ void deadlock_detection()
 
         sleep(TIME_DELAY);
     }
+    return NULL;
 }
 void unit_test();
 
@@ -422,7 +429,9 @@ gcc main.c -lpthread
         *thread_num[i] = i;
         pthread_create(&arr_thread[i], NULL, thread_process, thread_num[i]);
     }
-    deadlock_detection();
+    pthread_t tdash;
+    pthread_create(&tdash, NULL, deadlock_detection, NULL);
+    pthread_join(tdash,NULL);
 }
 void unit_test()
 {
@@ -474,7 +483,8 @@ void unit_test()
     for (int i = 1; i <= 4; i++)
     {
         function_no=i;
-        deadlock_detection();
+        pthread_t tdash;
+        pthread_create(&tdash, NULL, deadlock_detection, NULL);
         printf("\n\nWe check deadlock for %d\n",times_deadlock_checked[function_no-1]);
         printf("And the deadlock occured for %d time(s)\n",times_deadlock_found[function_no-1]);
         if(times_deadlock_found[function_no-1]){
