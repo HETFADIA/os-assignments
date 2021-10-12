@@ -475,5 +475,10 @@ void unit_test()
         deadlock_detection();
         printf("\n\nWe check deadlock for %d\n",times_deadlock_checked[function_no-1]);
         printf("And the deadlock occured for %d time(s)\n",times_deadlock_found[function_no-1]);
+        if(times_deadlock_found[function_no-1]){
+            float deadlock_occurs_after=(float)times_deadlock_checked[function_no-1]/times_deadlock_found[function_no-1];
+            deadlock_occurs_after*=TIME_DELAY;
+            printf("The time delay is %f seconds\n",deadlock_occurs_after);
+        }
     }
 }
