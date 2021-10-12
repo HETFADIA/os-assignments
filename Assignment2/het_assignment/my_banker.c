@@ -149,8 +149,10 @@ int heuristics4(bool arr_involved_in_deadlock[])
 }
 void *thread_process(void *args)
 {
-    int thread_num = *((int *)args);
-    int arr[MAX_TOTAL_RESOURCES], save_temp[MAX_TOTAL_RESOURCES];
+    int thread_num;
+    thread_num = *((int *)args);
+    int arr[MAX_TOTAL_RESOURCES];
+    int save_temp[MAX_TOTAL_RESOURCES];
     while (true)
     {
         if (deadlock_resolved==0)
