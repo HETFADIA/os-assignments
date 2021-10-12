@@ -147,6 +147,22 @@ int heuristics4(bool arr_involved_in_deadlock[])
     }
     return to_be_removed;
 }
+int call_heuristic(int switcher,bool arr_involved_in_deadlock[]){
+    int res=-1;
+    if(switcher==1){
+        return heuristics1(arr_involved_in_deadlock);
+    }
+    else if(switcher==2){
+        return heuristics2(arr_involved_in_deadlock);
+    }
+    else if(switcher==3){
+        return  heuristics3(arr_involved_in_deadlock);
+    }
+    else if(switcher==4){
+        return heuristics4(arr_involved_in_deadlock);
+    }
+    return res;
+}
 void *thread_process(void *args)
 {
     int thread_num;
@@ -250,22 +266,7 @@ void *thread_process(void *args)
 }
 int times_deadlock_found = 0;
 int times_deadlock_checked = 0;
-int call_heuristic(int switcher,bool arr_involved_in_deadlock[]){
-    int res=-1;
-    if(switcher==1){
-        return heuristics1(arr_involved_in_deadlock);
-    }
-    else if(switcher==2){
-        return heuristics2(arr_involved_in_deadlock);
-    }
-    else if(switcher==3){
-        return  heuristics3(arr_involved_in_deadlock);
-    }
-    else if(switcher==4){
-        return heuristics4(arr_involved_in_deadlock);
-    }
-    return res;
-}
+
 void deadlock_detection()
 {
     while (true)
