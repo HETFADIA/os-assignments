@@ -270,14 +270,13 @@ void *thread_process(void *args)
 }
 int times_deadlock_found[4];
 int times_deadlock_checked[4];
-int global_argc;
 int times_to_be_checked=5;
 void deadlock_detection()
 {
     int counter = 0;
     while (true)
     {
-        if (counter == times_to_be_checked && global_argc==2)
+        if (counter == times_to_be_checked && testing)
         {
             return;
         }
@@ -341,9 +340,10 @@ void deadlock_detection()
     }
 }
 void unit_test();
+int testing=0;
 signed main(int argc, char **argv)
 {
-    global_argc = argc;
+    
     if (argc == 2)
     {
         char *test = "test";
@@ -425,6 +425,7 @@ gcc main.c -lpthread
 }
 void unit_test()
 {
+    testing=1;
     MAX_TOTAL_RESOURCES = 2;
     TOTAL_THREADS = 2;
     TIME_DELAY = 1;
