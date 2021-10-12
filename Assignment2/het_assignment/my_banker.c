@@ -264,14 +264,15 @@ void *thread_process(void *args)
     }
     return NULL;
 }
-int times_deadlock_found = 0;
-int times_deadlock_checked = 0;
-
+int times_deadlock_found [4];
+int times_deadlock_checked [4];
+int global_argc;
 void deadlock_detection()
 {
+
     while (true)
     {
-        ++times_deadlock_checked;
+        ++times_deadlock_checked[function_no-1];
         printf("Detecting deadlock ....\n");
 
         bool deadlock_found = true;
@@ -317,7 +318,7 @@ void deadlock_detection()
         deadlock_resolved = !deadlock_found;
         if (deadlock_found)
         {
-            ++times_deadlock_found;
+            ++times_deadlock_found[function_no-1];
             to_be_removed=call_heuristic(function_no,arr_involved_in_deadlock);
             pthread_mutex_lock(&mutex_keep_alive);
             keep_alive[to_be_removed] = false;
@@ -329,9 +330,17 @@ void deadlock_detection()
         sleep(TIME_DELAY);
     }
 }
-
+void unit_test();
 signed main(int argc, char **argv)
 {
+    global_argc=argc;
+    if(argc==2){
+        char* test="test";
+        if(strcmp(test,argv[1])==0){
+            unit_test();
+            return 0;
+        }
+    }
     if (argc < 6)
     {
         /*
@@ -390,15 +399,18 @@ gcc main.c -lpthread
         }
     }
     int *thread_num[TOTAL_THREADS];
+    printf("Threads=%d\n", TOTAL_THREADS);
+    printf("Total resources=%d\n", MAX_TOTAL_RESOURCES);
+    printf("Time delay= %ds\n", TIME_DELAY);
+    printf("Function no= %d\n", function_no);
     for (int i = 0; i < TOTAL_THREADS; ++i)
     {
         thread_num[i] = (int *)malloc(sizeof(int));
         *thread_num[i] = i;
         pthread_create(&arr_thread[i], NULL, thread_process, thread_num[i]);
     }
-    printf("Threads=%d\n", TOTAL_THREADS);
-    printf("Total resources=%d\n", MAX_TOTAL_RESOURCES);
-    printf("Time delay= %ds\n", TIME_DELAY);
-    printf("Function no= %d\n", function_no);
     deadlock_detection();
+}
+void unit_test(){
+
 }
