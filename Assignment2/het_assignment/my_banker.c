@@ -429,7 +429,7 @@ void unit_test()
     TOTAL_THREADS = 2;
     TIME_DELAY = 1;
     function_no=1;
-    times_to_be_checked=5;
+    times_to_be_checked=100;
     memset(arr_of_resources, 0, 1000 * sizeof(int));
     memset(maxarr_of_resources, 0, 1000 * sizeof(int));
     memset(time_stamp, 0, 1000 * sizeof(int));
@@ -473,6 +473,16 @@ void unit_test()
     {
         function_no=i;
         deadlock_detection();
+        printf("\n\nWe check deadlock for %d\n",times_deadlock_checked[function_no-1]);
+        printf("And the deadlock occured for %d time(s)\n",times_deadlock_found[function_no-1]);
+        if(times_deadlock_found[function_no-1]){
+            float deadlock_occurs_after=(float)times_deadlock_checked[function_no-1]/times_deadlock_found[function_no-1];
+            deadlock_occurs_after*=TIME_DELAY;
+            printf("The time delay is %f seconds\n",deadlock_occurs_after);
+        }
+    }
+    for(int i=1;i<=4;++i){
+        function_no=i;
         printf("\n\nWe check deadlock for %d\n",times_deadlock_checked[function_no-1]);
         printf("And the deadlock occured for %d time(s)\n",times_deadlock_found[function_no-1]);
         if(times_deadlock_found[function_no-1]){
