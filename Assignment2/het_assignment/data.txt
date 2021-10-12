@@ -1,0 +1,18 @@
+We check deadlock for 100
+And the deadlock occured for 9 time(s)
+The time delay is 11.111111 seconds
+
+
+We check deadlock for 100
+And the deadlock occured for 16 time(s)
+The time delay is 6.250000 seconds
+
+
+We check deadlock for 100
+And the deadlock occured for 14 time(s)
+The time delay is 7.142857 seconds
+
+
+We check deadlock for 100
+And the deadlock occured for 15 time(s)
+The time delay is 6.666667 seconds
