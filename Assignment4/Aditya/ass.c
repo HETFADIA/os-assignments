@@ -343,4 +343,5 @@ int main(int argc, char **argv){
     sec_time = 1/sec_time;
     sec_time /= 20;
     generate_queue();
+    process();
 }
