@@ -4,8 +4,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <math.h>
 
-int r, Ts, N, queue_size;
+int r, Ts, N, queue_size = 0;
 int num_req = 0;
 int type = 1;
 double seek_time = 0;
@@ -91,10 +92,13 @@ void stats(double t){
         min_normal = t;
     if(t>max_normal)
         max_normal = t;
+    printf("Time: %lf\n", t);
     printf("Min: %lf\n", min_normal);
     printf("Max: %lf\n", max_normal);
     printf("Avg: %lf\n", sum_normal/cnt_normal);
     printf("Stddev: %lf\n", stddev);
+    printf("Queue size: %d\n", queue_size);
+    printf("------------------------\n");
 }
 
 void generate_queue(){
@@ -118,7 +122,7 @@ double calc_sec(int diff){
 void random(){
     int curr_cyl = rand()%25 + 1;
     int curr_sec = 1;
-    while(queue_size>0){
+    while(queue_size>0 && head!=NULL){
         int ind = rand()%queue_size;
         struct node *ptr = head;
         for(int i=0;i<ind;i++){
@@ -132,7 +136,7 @@ void random(){
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
-        int sec_diff = (sec-curr_sec);
+        int sec_diff = (abs(sec-curr_sec+20)%20);
         double time = track_diff*seek_time + (sec_diff+num)*sec_time;
         curr_sec = (curr_sec-1+num)%20 + 1;
         curr_cyl = cyl;
@@ -152,7 +156,7 @@ void fifo(){
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
-        int sec_diff = (sec-curr_sec);
+        int sec_diff = (abs(sec-curr_sec+20)%20);
         double time = track_diff*seek_time + (sec_diff+num)*sec_time;
         curr_sec = (curr_sec-1+num)%20 + 1;
         curr_cyl = cyl;
@@ -180,7 +184,7 @@ void sstf(){
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
-        int sec_diff = (sec-curr_sec);
+        int sec_diff = (abs(sec-curr_sec+20)%20);
         double time = track_diff*seek_time + (sec_diff+num)*sec_time;
         curr_sec = (curr_sec-1+num)%20 + 1;
         curr_cyl = cyl;
@@ -259,7 +263,7 @@ void scan(){
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
-        int sec_diff = (sec-curr_sec);
+        int sec_diff = (abs(sec-curr_sec+20)%20);
         double time = track_diff*seek_time + (sec_diff+num)*sec_time;
         curr_sec = (curr_sec-1+num)%20 + 1;
         curr_cyl = cyl;
@@ -311,7 +315,7 @@ void cscan(){
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
-        int sec_diff = (sec-curr_sec);
+        int sec_diff = (abs(sec-curr_sec+20)%20);
         double time = track_diff*seek_time + (sec_diff+num)*sec_time;
         curr_sec = (curr_sec-1+num)%20 + 1;
         curr_cyl = cyl;
@@ -338,10 +342,12 @@ int main(int argc, char **argv){
     N = atoi(argv[3]);
     num_req = atoi(argv[4]);
     type = atoi(argv[5]);
-    seek_time = Ts*3/25;
-    sec_time = r/60000;
-    sec_time = 1/sec_time;
-    sec_time /= 20;
+    seek_time = Ts*3.0/25.0;
+    sec_time = r/60000.0;
+    sec_time = 1.0/sec_time;
+    sec_time /= 20.0;
+    printf("Seek time: %f", seek_time);
     generate_queue();
     process();
+    printf("Program ended!\n");
 }
