@@ -50,7 +50,7 @@ void enqueue(int p, int c, int s, int nu){
     queue_size++;
 }
 
-void remove(struct node *r){
+void remove_node(struct node *r){
     if(head == NULL){
         return;
     }
@@ -128,7 +128,7 @@ void random(){
         int cyl = ptr->cyl;
         int sec = ptr->sec;
         int num = ptr->num;
-        remove(ptr);
+        remove_node(ptr);
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
@@ -148,7 +148,7 @@ void fifo(){
         int cyl = head->cyl;
         int sec = head->sec;
         int num = head->num;
-        remove(head);
+        remove_node(head);
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
@@ -176,7 +176,7 @@ void sstf(){
         int cyl = closest->cyl;
         int sec = closest->sec;
         int num = closest->num;
-        remove(closest);
+        remove_node(closest);
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
@@ -255,7 +255,7 @@ void scan(){
         int cyl = closest->cyl;
         int sec = closest->sec;
         int num = closest->num;
-        remove(closest);
+        remove_node(closest);
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
@@ -307,7 +307,7 @@ void cscan(){
         int cyl = closest->cyl;
         int sec = closest->sec;
         int num = closest->num;
-        remove(closest);
+        remove_node(closest);
         int track_diff = abs(cyl-curr_cyl);
         int secs = calc_sec(track_diff);
         curr_sec = (curr_sec-1+secs)%20 + 1;
