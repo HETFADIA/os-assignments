@@ -1,91 +1,61 @@
-Name: Het Fadia
-Roll No: 2019CSB1084
-Course: CSL303 Operating Systems
-Assignment: 4
+Name: Aditya Agarwal 
+Roll No: 2019CSB1064
+Course: CSL303
+==================================================================================
 
 1. What does the program do?
 
-Here requests are created in the program and then they are simulated according to the given algorithm.
-Along with that the statistics are also calculated.
+This program is used to simulate  bunch of processes requesting memory space according
+to the required constraints, and the space is then allocated to the space depending
+on the type of space partitioning algorithm used.
+
+==================================================================================
+
+2. Description 
+
+When provided with the time duration and memory space constraints, multiple processes are
+created at the required arrival rate and they request memory and time duration corresponding
+to the constraints provided, randomly. 
+
+These constraints, along with the total time duration of the simulation and the type of space
+partitioning algorithm is given through the CL arguments.
+
+There are 3 types of space partitioning algorithms in use:
+    1. First-fit
+    2. Best-fit
+    3. Next-fit
+
+The number corresponds to the type of algorithm.
+
+CLI arguments needed are:
+./a.out <p> <q> <n> <m> <t> <Total time duration of the program(m)> <Type of algorithm>
 
 
-2. Description of proram:
-
-The program takes type of algorithm, queue_size,number of requests etc as the input.
-
-First it enqueues the requests in the queue.
-Then according to the specified algorithm it does the process.
-
-Here the following algorithm are implemented according to the types:
-    0. Random_scheduling_algorithm
-    1. FIFO
-    2. SSTF
-    3. SCAN
-    4. CSCAN
-
-0. Random_scheduling_algorithm:
-It randomly selects a request from the queue and it is dequeued.
-
-1. FIFO:
-It dequeues the first inserted request from the queue and it is processed.
-
-2. SSTF:
-It dequeues the request with the least distance from the head of the queue and it is processed.
-
-3. SCAN:
-It moves from the start to the right and processes the requests. After that it goes from the end to the left and processes the requests.
-
-4. CSCAN:
-It moves from the start to the right and processes the requests. After that it goes from the left to the start position and processes the requests.
-
-We can run the program with the following CLI command:
-gcc main.c -lm
-./a.out <r> <N> <Ts> <requests> <algorithm>
-Here algorithm is between 0 to 4 (both inclusive) and according to it the algorithm is implemented
-    0. Random_scheduling_algorithm
-    1. FIFO
-    2. SSTF
-    3. SCAN
-    4. CSCAN
-r is RPM of the disk.
-N is the size of sector in bytes.
-Ts is the avg seeking time in ms.
-requests is the number of requests.
 Example:
-gcc main.c -lm
-./a.out 7500 512 4 1000 3
+./a.out 1000 200 10 10 10 15 2
 
-The program also prints the statistics of the program(the throughput etc)
+Value of p, q, n, m, and t are 1000, 200, 10, 10, and 10 respectively.
+The simulation will run for a total duration of 15 minutes.
+The type of algorithm to use is 2. Best-fit.
 
+The experimental results as required are attached in the accompanying pdf file.
+For each case, the algorithms are presented in order.
 
-FIFO and Random_scheduling_algorithm performs similar. 
-SSTF, SCAN and CSCAN also perform similar and they perform much better than FIFO and Random_scheduling_algorithm.
+We can see that overall, best-fit performs the best in general. The results
+were kind of mixed overall, however, best-fit did in general seem to perform 
+better than the other two.
 
+There can be a maximum of 10 processes in the queue to ensure that the turnaround time
+is stable and doesn't go into infinity(which can happen if we take an infinite queue size).
 
-SCAN had the highest throughput, followed by C-SCAN.
-Thus SCAN was the best algorithm.
-FIFO had the least throughput.
-
-Overall this was observed:
-SCAN> CSCAN>SSTF> Random> FIFO
-
-
+==================================================================================
 
 3. How to run:
 
-gcc main.c -lm
-./a.out <r> <N> <Ts> <requests> <algorithm>
-algorithm is between 0 to 4 (both inclusive) and according to it the type of the algorithm is implemented.
-    0. Random_scheduling_algorithm
-    1. FIFO
-    2. SSTF
-    3. SCAN
-    4. CSCAN
-r is RPM of the disk.
-N is the size of sector in bytes.
-Ts is the avg seeking time in ms.
-requests is the number of requests.
+    gcc memory.c -lpthread
+    ./a.out <p> <q> <n> <m> <t> <Total time duration of the program(m)> <Type of algorithm>
 
-Example:
-gcc main.c -lm
-./a.out 7500 512 4 1000 3
+    Here all the values should be positive integers.
+    
+    Example:
+    ./a.out 1000 200 10 10 10 15 2
