@@ -162,30 +162,33 @@ void FIFO()
 {
     int curr_cylinder = randint(1, 25);
     int curr_sector = randint(1, 20);
-    int platter,cylinder,sector,number_of_sectors,track_diff;
+    int platter, cylinder, sector, number_of_sectors, track_diff;
     while (queue_size)
     {
         node *ptr = pop(0);
         platter = ptr->platter;
         cylinder = ptr->cylinder;
         track_diff = cylinder - curr_cylinder;
-        if(track_diff<0){
-            track_diff=-track_diff;
+        if (track_diff < 0)
+        {
+            track_diff = -track_diff;
         }
         sector = ptr->sector;
         number_of_sectors = ptr->number_of_sectors;
         free(ptr);
         int secs = calc_sector(track_diff);
-        curr_sector = (curr_sector - 1 + secs) % 20 ;
+        curr_sector = (curr_sector - 1 + secs) % 20;
         ++curr_sector;
         int sec_diff = ((sector - curr_sector + 20) % 20);
-        if(sec_diff<0){
-            sec_diff+=20;
+        if (sec_diff < 0)
+        {
+            sec_diff += 20;
         }
         double time = track_diff * seeking_time + (sec_diff + number_of_sectors) * time_for_sector;
         curr_sector = (curr_sector - 1 + number_of_sectors) % 20 + 1;
-        if(curr_sector<0){
-            curr_sector+=20;
+        if (curr_sector < 0)
+        {
+            curr_sector += 20;
         }
         curr_cylinder = cylinder;
         display_values(time);
@@ -211,26 +214,27 @@ void Random_scheduling_policy()
         secs = calc_sector(track_diff);
         curr_sector = (curr_sector - 1 + secs) % 20 + 1;
         int sec_diff = ((sector - curr_sector + 20) % 20);
-        if(sec_diff<0){
-            sec_diff+=20;
+        if (sec_diff < 0)
+        {
+            sec_diff += 20;
         }
         double time = track_diff * seeking_time + (sec_diff + number_of_sectors) * time_for_sector;
         curr_sector = (curr_sector - 1 + number_of_sectors) % 20 + 1;
-        if(curr_sector<0){
-            curr_sector+=20;
+        if (curr_sector < 0)
+        {
+            curr_sector += 20;
         }
         curr_cylinder = cylinder;
         display_values(time);
     }
 }
 
-
 void SSTF()
 {
     int curr_cylinder = randint(1, 25);
     int curr_sector = randint(1, 20);
-    int platter,cylinder,sector,number_of_sectors;
-    int track_diff,secs;
+    int platter, cylinder, sector, number_of_sectors;
+    int track_diff, secs;
     while (queue_size)
     {
         struct node *ptr = head;
@@ -251,18 +255,21 @@ void SSTF()
         track_diff = abs(cylinder - curr_cylinder);
         secs = calc_sector(track_diff);
         curr_sector = (curr_sector - 1 + secs) % 20 + 1;
-        if(curr_sector<sector){
-            curr_sector+=20;
+        if (curr_sector < sector)
+        {
+            curr_sector += 20;
         }
         int sec_diff;
         sec_diff = (abs(sector - curr_sector + 20) % 20);
-        if(sec_diff<0){
-            sec_diff+=20;
+        if (sec_diff < 0)
+        {
+            sec_diff += 20;
         }
         double time = track_diff * seeking_time + (sec_diff + number_of_sectors) * time_for_sector;
         curr_sector = (curr_sector - 1 + number_of_sectors) % 20 + 1;
-        if(curr_sector<0){
-            curr_sector+=20;
+        if (curr_sector < 0)
+        {
+            curr_sector += 20;
         }
         curr_cylinder = cylinder;
         display_values(time);
@@ -272,7 +279,7 @@ void SCAN()
 {
     int curr_cylinder = randint(1, 25);
     int curr_sector = randint(1, 20);
-    int platter,cylinder,sector,number_of_sectors,track_diff,secs;
+    int platter, cylinder, sector, number_of_sectors, track_diff, secs;
     while (queue_size)
     {
         for (int i = curr_cylinder; i <= 25; i++)
@@ -291,17 +298,20 @@ void SCAN()
                     track_diff = abs(cylinder - curr_cylinder);
                     secs = calc_sector(track_diff);
                     curr_sector = (curr_sector - 1 + secs) % 20 + 1;
-                    if(curr_sector<0){
-                        curr_sector+=20;
+                    if (curr_sector < 0)
+                    {
+                        curr_sector += 20;
                     }
                     int sec_diff = (abs(sector - curr_sector + 20) % 20);
-                    if(sec_diff<0){
-                        sec_diff+=20;
+                    if (sec_diff < 0)
+                    {
+                        sec_diff += 20;
                     }
                     double time = track_diff * seeking_time + (sec_diff + number_of_sectors) * time_for_sector;
                     curr_sector = (curr_sector - 1 + number_of_sectors) % 20 + 1;
-                    if(curr_sector<0){
-                        curr_sector+=20;
+                    if (curr_sector < 0)
+                    {
+                        curr_sector += 20;
                     }
                     curr_cylinder = cylinder;
                     display_values(time);
@@ -324,22 +334,26 @@ void SCAN()
                     number_of_sectors = ptr->number_of_sectors;
                     _remove(ptr);
                     int track_diff = abs(cylinder - curr_cylinder);
-                    if(track_diff<0){
-                        track_diff=-track_diff;
+                    if (track_diff < 0)
+                    {
+                        track_diff = -track_diff;
                     }
                     int secs = calc_sector(track_diff);
                     curr_sector = (curr_sector - 1 + secs) % 20 + 1;
-                    if(curr_sector<=0){
-                        curr_sector=20+curr_sector;
+                    if (curr_sector <= 0)
+                    {
+                        curr_sector = 20 + curr_sector;
                     }
                     int sec_diff = (abs(sector - curr_sector + 20) % 20);
-                    if(sec_diff<0){
-                        sec_diff=-sec_diff;
+                    if (sec_diff < 0)
+                    {
+                        sec_diff = -sec_diff;
                     }
                     double time = track_diff * seeking_time + (sec_diff + number_of_sectors) * time_for_sector;
                     curr_sector = (curr_sector - 1 + number_of_sectors) % 20 + 1;
-                    if(curr_sector<0){
-                        curr_sector+=20;
+                    if (curr_sector < 0)
+                    {
+                        curr_sector += 20;
                     }
                     curr_cylinder = cylinder;
                     display_values(time);
@@ -365,25 +379,29 @@ void CSCAN()
                 node *next = ptr->next;
                 if (ptr->cylinder == i)
                 {
-                    int platter = ptr->platter,cylinder = ptr->cylinder,sector = ptr->sector,number_of_sectors = ptr->number_of_sectors;
+                    int platter = ptr->platter, cylinder = ptr->cylinder, sector = ptr->sector, number_of_sectors = ptr->number_of_sectors;
                     _remove(ptr);
                     int track_diff = abs(cylinder - curr_cylinder);
-                    if(track_diff<0){
-                        track_diff=-track_diff;
+                    if (track_diff < 0)
+                    {
+                        track_diff = -track_diff;
                     }
                     int secs = calc_sector(track_diff);
                     curr_sector = (curr_sector - 1 + secs) % 20 + 1;
-                    if(curr_sector<0){
-                        curr_sector=20+curr_sector;
+                    if (curr_sector < 0)
+                    {
+                        curr_sector = 20 + curr_sector;
                     }
                     int sec_diff = (abs(sector - curr_sector + 20) % 20);
-                    if(sec_diff<0){
-                        sec_diff=-sec_diff;
+                    if (sec_diff < 0)
+                    {
+                        sec_diff = -sec_diff;
                     }
                     double time = track_diff * seeking_time + (sec_diff + number_of_sectors) * time_for_sector;
                     curr_sector = (curr_sector - 1 + number_of_sectors) % 20 + 1;
-                    if(curr_sector<0){
-                        curr_sector=20+curr_sector;
+                    if (curr_sector < 0)
+                    {
+                        curr_sector = 20 + curr_sector;
                     }
                     curr_cylinder = cylinder;
                     display_values(time);
@@ -400,25 +418,29 @@ void CSCAN()
                 if (ptr->cylinder == i)
                 {
 
-                    int platter = ptr->platter,cylinder = ptr->cylinder,sector = ptr->sector,number_of_sectors = ptr->number_of_sectors;
+                    int platter = ptr->platter, cylinder = ptr->cylinder, sector = ptr->sector, number_of_sectors = ptr->number_of_sectors;
                     _remove(ptr);
                     int track_diff = abs(cylinder - curr_cylinder);
-                    if(track_diff<0){
-                        track_diff=-track_diff;
+                    if (track_diff < 0)
+                    {
+                        track_diff = -track_diff;
                     }
                     int secs = calc_sector(track_diff);
                     curr_sector = (curr_sector - 1 + secs) % 20 + 1;
-                    if(curr_sector<0){
-                        curr_sector=-curr_sector;
+                    if (curr_sector < 0)
+                    {
+                        curr_sector = -curr_sector;
                     }
                     int sec_diff = (abs(sector - curr_sector + 20) % 20);
-                    if(sec_diff<0){
-                        sec_diff=-sec_diff;
+                    if (sec_diff < 0)
+                    {
+                        sec_diff = -sec_diff;
                     }
                     double time = track_diff * seeking_time + (sec_diff + number_of_sectors) * time_for_sector;
                     curr_sector = (curr_sector - 1 + number_of_sectors) % 20 + 1;
-                    if(curr_sector<0){
-                        curr_sector=20+curr_sector;
+                    if (curr_sector < 0)
+                    {
+                        curr_sector = 20 + curr_sector;
                     }
                     curr_cylinder = cylinder;
                     display_values(time);
@@ -469,13 +491,14 @@ int main(int argc, char **argv)
         return -1;
     }
     r = atoi(argv[1]);
-    if(r<=0)
+    if (r <= 0)
     {
         printf("Error: r must be a positive integer\n");
         return -1;
     }
     N = atoi(argv[2]);
-    if(N<0){
+    if (N < 0)
+    {
         printf("Error: N must be a positive integer\n");
         exit(-1);
     }
