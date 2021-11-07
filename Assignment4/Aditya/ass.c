@@ -77,7 +77,8 @@ void remove_node(struct node *r){
 }
 
 double sum_vals = 0;
-void stats(double t){
+
+void stats(double t){  //used to print all the required stats, and store values
     sum_vals += t;
     t = sum_vals;
     sum_normal += t;
@@ -104,7 +105,7 @@ void stats(double t){
     printf("------------------------\n");
 }
 
-void generate_queue(){
+void generate_queue(){  //generates the queue of requests initially
     for(int i = 0; i<num_req; i++){
         int p = rand()%4 + 1;
         int c = rand()%25 + 1;
@@ -114,7 +115,7 @@ void generate_queue(){
     }
 }
 
-double calc_sec(int diff){
+double calc_sec(int diff){  //converts track difference to sector difference 
     double time_req = diff*seek_time;
     double rate = (double)r/60000;
     double revs = rate*time_req;
@@ -123,11 +124,11 @@ double calc_sec(int diff){
 }
 
 void _random(){
-    int curr_cyl = rand()%25 + 1;
+    int curr_cyl = rand()%25 + 1;  //generates random inital cylinder and sector positions
     int curr_sec = rand()%20 + 1;
     while(queue_size>0){
         int ind = rand()%queue_size;
-        struct node *ptr = head;
+        struct node *ptr = head;  //find node at selected random position
         for(int i=0;i<ind;i++){
             ptr = ptr->next;
         }
@@ -148,33 +149,33 @@ void _random(){
 }
 
 void fifo(){
-    int curr_cyl = rand()%25 + 1;
+    int curr_cyl = rand()%25 + 1;  //generates random inital cylinder and sector positions
     int curr_sec = rand()%20 + 1;
     while(queue_size>0){
-        int plat = head->plat;
+        int plat = head->plat; //simply use head of queue
         int cyl = head->cyl;
         int sec = head->sec;
         int num = head->num;
         remove_node(head);
-        int track_diff = abs(cyl-curr_cyl);
+        int track_diff = abs(cyl-curr_cyl); //calculate track difference
         int secs = calc_sec(track_diff);
-        curr_sec = (curr_sec-1+secs)%20 + 1;
-        int sec_diff = (abs(sec-curr_sec+20)%20);
-        double time = track_diff*seek_time + (sec_diff+num)*sec_time;
-        curr_sec = (curr_sec-1+num)%20 + 1;
+        curr_sec = (curr_sec-1+secs)%20 + 1; //update current sector
+        int sec_diff = (abs(sec-curr_sec+20)%20); //calculate sector difference
+        double time = track_diff*seek_time + (sec_diff+num)*sec_time; //calculate time
+        curr_sec = (curr_sec-1+num)%20 + 1; //update current sector again
         curr_cyl = cyl;
         stats(time);
     }
 }
 
 void sstf(){
-    int curr_cyl = rand()%25 + 1;
+    int curr_cyl = rand()%25 + 1;  //generates random inital cylinder and sector positions
     int curr_sec = rand()%20 + 1;
     while(queue_size>0){
         struct node *ptr = head;
         struct node *closest = head;
         while(ptr!=NULL){
-            if(abs(ptr->cyl-curr_cyl)<abs(closest->cyl-curr_cyl)){
+            if(abs(ptr->cyl-curr_cyl)<abs(closest->cyl-curr_cyl)){ //find closest cylinder node
                 closest = ptr;
             }
             ptr = ptr->next;
@@ -196,16 +197,16 @@ void sstf(){
 }
 
 void scan(){
-    int curr_cyl = rand()%25 + 1;
+    int curr_cyl = rand()%25 + 1;  //generates random inital cylinder and sector positions
     int curr_sec = rand()%20 + 1;
     double prev = 0;
     bool direction = 0;
-    if(curr_cyl>13)
+    if(curr_cyl>13) //if current cylinder is less than 13, start scanning in reverse
         direction = 1;
     while(queue_size>0){
         struct node *ptr = head;
         struct node *closest = NULL;
-        if(direction==1){
+        if(direction==1){  //scan through queue and find closest cylinder node in the direction of scanning
             while(ptr!=NULL){
                 if(ptr->cyl>=curr_cyl){
                     closest = ptr;
@@ -223,7 +224,7 @@ void scan(){
                 ptr = ptr->next;
             } 
         }
-        if(closest==NULL){
+        if(closest==NULL){  //if no node is found, go to the end and scan in the opposite direction
             if(direction==1){
                 int track_diff = abs(25-curr_cyl);
                 int secs = calc_sec(track_diff);
@@ -246,7 +247,7 @@ void scan(){
             }
         }
         ptr = head;
-        while(ptr!=NULL){
+        while(ptr!=NULL){  //find closest node to current cylinder in the direction of scanning
             if(direction==1 && ptr->cyl>=curr_cyl){
                 if(ptr->cyl<closest->cyl){
                     closest = ptr;
@@ -277,20 +278,20 @@ void scan(){
 }
 
 void cscan(){
-    int curr_cyl = rand()%25 + 1;
+    int curr_cyl = rand()%25 + 1;  //generates random inital cylinder and sector positions
     int curr_sec = rand()%20 + 1;
     double prev = 0;
     while(queue_size>0){
         struct node *ptr = head;
         struct node *closest = NULL;
-        while(ptr!=NULL){
+        while(ptr!=NULL){  //find closest cylinder node in direction of scanning
             if(ptr->cyl>=curr_cyl){
                 closest = ptr;
                 break;
             }
             ptr = ptr->next;
         }
-        if(closest==NULL){
+        if(closest==NULL){  //if no node is found, go to the end and start from the beginning
             int track_diff = abs(25-curr_cyl);
             int secs = calc_sec(track_diff);
             curr_sec = (curr_sec-1+secs)%20 + 1;
