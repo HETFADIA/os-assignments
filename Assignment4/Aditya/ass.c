@@ -76,13 +76,15 @@ void remove_node(struct node *r){
     queue_size--;
 }
 
+double sum_vals = 0;
 void stats(double t){
-    t = t+sum_normal;
+    sum_vals += t;
+    t = sum_vals;
+    sum_normal += t;
     if(min_normal==-1){
         min_normal = t;
         max_normal = t;
     }
-    sum_normal = t;
     sum_square += t*t;
     cnt_normal++;
     double stddev = sum_square/cnt_normal;
@@ -97,6 +99,7 @@ void stats(double t){
     printf("Max: %lf\n", max_normal);
     printf("Avg: %lf\n", sum_normal/cnt_normal);
     printf("Stddev: %lf\n", stddev);
+    printf("Throughput: %lf\n", cnt_normal/sum_vals*1000.0);
     printf("Queue size: %d\n", queue_size);
     printf("------------------------\n");
 }
@@ -119,7 +122,7 @@ double calc_sec(int diff){
     return cl(secs);
 }
 
-void random(){
+void _random(){
     int curr_cyl = rand()%25 + 1;
     int curr_sec = rand()%20 + 1;
     while(queue_size>0){
@@ -195,6 +198,7 @@ void sstf(){
 void scan(){
     int curr_cyl = rand()%25 + 1;
     int curr_sec = rand()%20 + 1;
+    double prev = 0;
     bool direction = 0;
     if(curr_cyl>13)
         direction = 1;
@@ -226,7 +230,7 @@ void scan(){
                 curr_sec = (curr_sec-1+secs)%20 + 1;
                 double time = track_diff*seek_time;
                 curr_cyl = 25;
-                stats(time);
+                prev = time;
                 direction = !direction;
                 continue;
             }
@@ -236,7 +240,7 @@ void scan(){
                 curr_sec = (curr_sec-1+secs)%20 + 1;
                 double time = track_diff*seek_time;
                 curr_cyl = 25;
-                stats(time);
+                prev = time;
                 direction = !direction;
                 continue;
             }
@@ -267,13 +271,15 @@ void scan(){
         double time = track_diff*seek_time + (sec_diff+num)*sec_time;
         curr_sec = (curr_sec-1+num)%20 + 1;
         curr_cyl = cyl;
-        stats(time);
+        stats(time+prev);
+        prev = 0;
     }
 }
 
 void cscan(){
     int curr_cyl = rand()%25 + 1;
     int curr_sec = rand()%20 + 1;
+    double prev = 0;
     while(queue_size>0){
         struct node *ptr = head;
         struct node *closest = NULL;
@@ -295,7 +301,7 @@ void cscan(){
             curr_sec = (curr_sec-1+secs)%20 + 1;
             time += track_diff*seek_time;
             curr_cyl = 1;
-            stats(time);
+            prev = time;
             continue;
         }
         ptr = head;
@@ -319,13 +325,14 @@ void cscan(){
         double time = track_diff*seek_time + (sec_diff+num)*sec_time;
         curr_sec = (curr_sec-1+num)%20 + 1;
         curr_cyl = cyl;
-        stats(time);
+        stats(time+prev);
+        prev = 0;
     }
 }
 
 void process(){
     if(type==1)
-        random();
+        _random();
     else if(type==2)
         fifo();
     else if(type==3)
