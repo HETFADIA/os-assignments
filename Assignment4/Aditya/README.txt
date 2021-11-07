@@ -89,3 +89,15 @@ requests is the number of requests.
 Example:
 gcc main.c -lm
 ./a.out 7500 512 4 1000 3
+
+
+Respected Sir,
+
+I have written the logic of the program in the Readme.txt file.
+I have mentioned in the Readme.txt file that we are using multithreading and allocating resources to the processes held by the threads then on the t_dash thread check the deadlock thread and eliminate the thread. I have also described each heuristic in the Readme.txt file and how they eliminate the thread accordingly.
+I have also added comments in the code to make the understanding of the code easier. Also, I have added the pictures of the program in the submitted folder.
+
+I think I have done the allocation of the memory in the best way. I have made the memory into chunks of 10 MBs and I have clearly mentioned in the Readme.
+Also Could you please elaborate on how memory allocation could have been done better?
+
+I have terminated the deadlock thread accordingly. First, the heuristic finds the deadlock thread and terminates the thread. The same is printed in the terminal too as "WE SKIPPED AND QUEUED THE PROCESS AT 0TH THREAD".
