@@ -32,7 +32,7 @@ struct node{
 };
 
 struct node *head = NULL;
-struct node *tail = NULL;
+struct node *tail = NULL; 
 
 void enqueue(int p, int c, int s, int nu){
     struct node *n = (struct node *)malloc(sizeof(struct node));
@@ -82,7 +82,7 @@ void stats(double t){
         min_normal = t;
         max_normal = t;
     }
-    sum_normal += t;
+    sum_normal = t;
     sum_square += t*t;
     cnt_normal++;
     double stddev = sum_square/cnt_normal;
@@ -121,8 +121,8 @@ double calc_sec(int diff){
 
 void random(){
     int curr_cyl = rand()%25 + 1;
-    int curr_sec = 1;
-    while(queue_size>0 && head!=NULL){
+    int curr_sec = rand()%20 + 1;
+    while(queue_size>0){
         int ind = rand()%queue_size;
         struct node *ptr = head;
         for(int i=0;i<ind;i++){
@@ -146,7 +146,7 @@ void random(){
 
 void fifo(){
     int curr_cyl = rand()%25 + 1;
-    int curr_sec = 1;
+    int curr_sec = rand()%20 + 1;
     while(queue_size>0){
         int plat = head->plat;
         int cyl = head->cyl;
@@ -166,7 +166,7 @@ void fifo(){
 
 void sstf(){
     int curr_cyl = rand()%25 + 1;
-    int curr_sec = 1;
+    int curr_sec = rand()%20 + 1;
     while(queue_size>0){
         struct node *ptr = head;
         struct node *closest = head;
@@ -194,7 +194,7 @@ void sstf(){
 
 void scan(){
     int curr_cyl = rand()%25 + 1;
-    int curr_sec = 1;
+    int curr_sec = rand()%20 + 1;
     bool direction = 0;
     if(curr_cyl>13)
         direction = 1;
@@ -273,7 +273,7 @@ void scan(){
 
 void cscan(){
     int curr_cyl = rand()%25 + 1;
-    int curr_sec = 1;
+    int curr_sec = rand()%20 + 1;
     while(queue_size>0){
         struct node *ptr = head;
         struct node *closest = NULL;
@@ -324,16 +324,20 @@ void cscan(){
 }
 
 void process(){
-    if(type==0)
+    if(type==1)
         random();
-    else if(type==1)
-        fifo();
     else if(type==2)
-        sstf();
+        fifo();
     else if(type==3)
-        scan();
+        sstf();
     else if(type==4)
+        scan();
+    else if(type==5)
         cscan();
+    else{
+        printf("Invalid type\n");
+        exit(0);
+    }
 }
 
 int main(int argc, char **argv){
