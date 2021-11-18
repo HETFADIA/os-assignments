@@ -1,0 +1,30 @@
+
+get attribute
+read directory
+read file
+write file
+mkdir
+mknod;
+
+
+folder => special mail 
+
+file suject name= file name 
+body =>file content
+
+
+
+
+will read the content when requested
+
+function fetches body of the uid
+
+1. folders from special mail, files information
+2. file or folder for get_attributes
+check
+3. readdir will return all files in some directory
+4. read(path) so make a function that fetches body of a mail for a UID
+and a function that searches for a subject and tells us the UID
+5. write(path) path ke corresponding we have subject, delete that mail (make a function that deletes mail with some UID), and make a new mail that has the same subject and send buffer data through it
+6. mkdir -> append to folder list
+and special mail edit
