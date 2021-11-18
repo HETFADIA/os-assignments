@@ -1,3 +1,6 @@
 https://www.tutorialspoint.com/c_standard_library/c_macro_offsetof.htm
 https://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
 https://curl.se/libcurl/c/example.html
+https://curl.se/mail/lib-2013-03/0104.html
+https://stackoverflow.com/questions/10267500/libcurl-and-imap
+https://www.youtube.com/watch?v=daA-KBKfJ_o

@@ -40,7 +40,7 @@ struct MemoryStruct
 static size_t
 WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-    size_t realsize = size * nmemb+30;
+    size_t realsize = size * nmemb + 30;
     struct MemoryStruct *mem = (struct MemoryStruct *)userp;
 
     char *ptr = realloc(mem->memory, mem->size + realsize + 1);
@@ -53,11 +53,11 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 
     mem->memory = ptr;
     memcpy(&(mem->memory[mem->size]), contents, realsize);
-    printf("contents is %s\n",contents);
+    printf("contents is %s\n", contents);
     mem->size += realsize;
     mem->memory[mem->size] = 0;
 
-    return realsize-30;
+    return realsize - 30;
 }
 
 int main(void)
@@ -82,7 +82,7 @@ int main(void)
     /* This will fetch message 1 from the user's inbox */
     curl_easy_setopt(curl_handle, CURLOPT_URL,
                      "imaps://imap.gmail.com:993/INBOX/;UID=3/;SECTION=HEADER.FIELDS%20(To)");
-    //curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST,"UID FETCH 4 BODY[TEXT]");
+    // curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST,"UID FETCH 4 BODY[TEXT]");
 
     /* send all data to this function  */
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
