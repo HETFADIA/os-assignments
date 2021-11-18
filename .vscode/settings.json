@@ -9,7 +9,8 @@
         "*.suo": true
     },
     "files.associations": {
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "TO.C": "cpp"
     },
     "cmake.configureOnOpen": false
 }
