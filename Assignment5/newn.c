@@ -81,7 +81,7 @@ int main(void)
 
     /* This will fetch message 1 from the user's inbox */
     curl_easy_setopt(curl_handle, CURLOPT_URL,
-                     "imaps://imap.gmail.com:993/INBOX/;UID=3/;SECTION=TEXT");
+                     "imaps://imap.gmail.com:993/INBOX/;UID=3");
     //curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST,"UID FETCH 4 BODY[TEXT]");
 
     /* send all data to this function  */

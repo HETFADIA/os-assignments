@@ -82,7 +82,7 @@ int main(void)
     //                  "SELECT \"INBOX\"");
 
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST,
-                     "UID FETCH 4 BODY[HEADER.FIELDS (To)]");
+                     "UID FETCH 4 BODY[TEXT]");
 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
 
