@@ -347,8 +347,8 @@ int main(int argc, char **argv)
 
     printf("\n------------------------------\n");
     printf("%s",pswd);
-    delete_sub("1");
-    //send_mail("del", "Starboy\n I want a ");
+    //delete_sub("1");
+    send_mail("del", "Starboy\n I want a ");
 
     // return fuse_main(argc-1, argv, &operations, NULL);
 }

@@ -12,7 +12,7 @@
 #include <ctype.h>
 
 char imap[100], smtp[100], user[100], pswd[100];
-int PORT_i, PORT_s;
+int PORT_i = -1, PORT_s = -1;
 
 struct MemoryStruct
 {
@@ -138,6 +138,11 @@ void Smail()
 void delete_sub(char a[])
 {
     int UID = searchbysubject(a);
+    if (UID == -1)
+    {
+        printf("\nNo such subject as %s found in the email\n", a);
+        return;
+    }
     CURL *curl_handle;
     CURLcode res;
     struct MemoryStruct chunk;
@@ -193,7 +198,7 @@ struct upload_status
 {
     int lines_read;
 };
-
+char *res_s;
 static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
 {
     struct upload_status *upload_ctx = (struct upload_status *)userp;
@@ -201,10 +206,19 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
     if (size * nmemb < 1)
         return 0;
     data = payload_text[upload_ctx->lines_read];
+
     if (data)
     {
         size_t len = strlen(data);
-        memcpy(ptr, data, len);
+        if (upload_ctx->lines_read == 0)
+        {
+            len=strlen(res_s);
+            memcpy(ptr, res_s, len);
+        }
+        else
+        {
+            memcpy(ptr, data, len);
+        }
         upload_ctx->lines_read++;
         return len;
     }
@@ -213,10 +227,10 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
 
 void send_mail(char sub[], char text[])
 {
-    char *res_s = calloc(strlen(sub) + 10, sizeof(char));
+    res_s = calloc(strlen(sub) + 10, sizeof(char));
     strcat(res_s, "Subject: ");
     strcat(res_s, sub);
-
+    printf("res_s is %s\n",res_s);
     // char *payload_text_1[] = {
     // res_s,
     // "\r\n",
@@ -236,7 +250,7 @@ void send_mail(char sub[], char text[])
     if (curl)
     {
         curl_easy_setopt(curl, CURLOPT_URL, "smtps://smtp.gmail.com");
-        printf("%s",user);
+        printf("%s", user);
         recipients = curl_slist_append(recipients, "testhailaude@gmail.com");
         curl_easy_setopt(curl, CURLOPT_USERNAME, "testhailaude@gmail.com");
         curl_easy_setopt(curl, CURLOPT_PASSWORD, pswd);
@@ -302,7 +316,7 @@ void send_mail(char sub[], char text[])
 int main(int argc, char **argv)
 {
     /*
-    gcc shikhar.c `pkg-config fuse --cflags --libs` -lcurl
+    gcc send_delete.c `pkg-config fuse --cflags --libs` -lcurl
     ./a.out  store configure.txt
 
     */
@@ -335,6 +349,12 @@ int main(int argc, char **argv)
     PORT_s = atoi(buf);
     memset(buf, 0, sizeof(buf));
     fgets(buf, 100, f);
+    if (PORT_i == -1 || PORT_s == -1)
+    {
+        printf("\nPort number error\n");
+        printf("\nPORT not supplied\n");
+        exit(-1);
+    }
     // username
     strcpy(user, buf);
     memset(buf, 0, sizeof(buf));
@@ -346,9 +366,9 @@ int main(int argc, char **argv)
     // Smail();
 
     printf("\n------------------------------\n");
-    printf("%s",pswd);
-    delete_sub("1");
-    //send_mail("del", "Starboy\n I want a ");
+    printf("%s", pswd);
+    // delete_sub("1");
+    send_mail("hello", "Starboy\n I want a ");
 
     // return fuse_main(argc-1, argv, &operations, NULL);
 }
