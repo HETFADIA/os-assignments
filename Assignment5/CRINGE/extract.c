@@ -19,6 +19,7 @@ char* extract(char *s)
     int len=strlen(s);
     for(int i=0;i<len;i++)
     {
+        int prev_start=start;
         if(i+4<len && s[i]=='<' && s[i+1]=='d' && s[i+2]=='i' && s[i+3]=='v' && s[i+4]=='>')
         {
             start=1;
@@ -44,7 +45,10 @@ char* extract(char *s)
         {
             ans[anslen++]=s[i];
         }
-        
+        if(prev_start==1 && start==0)
+        {
+            ans[anslen++]='\n';
+        }
         
     }
     char * result = (char*)malloc(sizeof(char)*anslen);
