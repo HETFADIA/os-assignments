@@ -236,7 +236,7 @@ void send_mail(char sub[], char text[])
     if (curl)
     {
         curl_easy_setopt(curl, CURLOPT_URL, "smtps://smtp.gmail.com");
-        printf("%s",user);
+        printf("%s", user);
         recipients = curl_slist_append(recipients, "testhailaude@gmail.com");
         curl_easy_setopt(curl, CURLOPT_USERNAME, "testhailaude@gmail.com");
         curl_easy_setopt(curl, CURLOPT_PASSWORD, pswd);
@@ -346,9 +346,9 @@ int main(int argc, char **argv)
     // Smail();
 
     printf("\n------------------------------\n");
-    printf("%s",pswd);
+    printf("%s", pswd);
     delete_sub("1");
-    //send_mail("del", "Starboy\n I want a ");
+    // send_mail("del", "Starboy\n I want a ");
 
     // return fuse_main(argc-1, argv, &operations, NULL);
 }
