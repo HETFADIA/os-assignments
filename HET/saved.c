@@ -11,12 +11,8 @@
 #include <curl/curl.h>
 #include <ctype.h>
 
-char imap[128];
-char smtp[128];
-char user[128];
-char pswd[128];
-int PORT_i = -1;
-int PORT_s = -1;
+char imap[100], smtp[100], user[100], pswd[100];
+int PORT_i = -1, PORT_s = -1;
 
 struct MemoryStruct
 {
@@ -24,7 +20,8 @@ struct MemoryStruct
     size_t size;
 };
 
-static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
+static size_t
+WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
     size_t realsize = size * nmemb;
     struct MemoryStruct *mem = (struct MemoryStruct *)userp;
@@ -71,7 +68,8 @@ int searchbysubject(char a[])
     int val = -1;
     if (res != CURLE_OK)
     {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                curl_easy_strerror(res));
     }
     else
     {
@@ -175,7 +173,8 @@ void delete_sub(char a[])
     int val;
     if (res != CURLE_OK)
     {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                curl_easy_strerror(res));
     }
     else
     {
@@ -191,7 +190,7 @@ void delete_sub(char a[])
 char *payload_text[] = {
     "Subject: SMTP example message",
     "\r\n",
-    "message",
+    "Bhag bsdk",
     "\r\n",
     NULL};
 
@@ -206,9 +205,7 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
     struct upload_status *upload_ctx = (struct upload_status *)userp;
     const char *data;
     if (size * nmemb < 1)
-    {
         return 0;
-    }
     data = payload_text[upload_ctx->lines_read];
 
     if (data)
@@ -245,7 +242,14 @@ void send_mail(char sub[], char text[])
     {
         body_msg[i] = text[i];
     }
-
+    // char *payload_text_1[] = {
+    // res_s,
+    // "\r\n",
+    // text,
+    // "\r\n",
+    // NULL
+    // };
+    // payload_text = payload_text_1;
     CURL *curl;
     CURLcode res = CURLE_OK;
     struct curl_slist *recipients = NULL;
@@ -268,62 +272,94 @@ void send_mail(char sub[], char text[])
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
         res = curl_easy_perform(curl);
         if (res != CURLE_OK)
-        {
             fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        }
         curl_slist_free_all(recipients);
         curl_easy_cleanup(curl);
     }
 }
+
+// static int SS_getattr(const char *path, struct stat *st){
+//     st->st_uid = getuid();
+// 	st->st_gid = getgid();
+// 	st->st_atime = time(NULL);
+// 	st->st_mtime = time(NULL);
+
+//     path++; // removing "/" from the path
+// 	int isFile = 0, isFldr = 0;
+// 	for(int i = 0; i <= var_file_len; i++){
+// 		if (strcmp(path, SS_filelist[i]) == 0){
+// 			isFile = 1;
+//             break;
+//         }
+//     }
+
+//     for(int i = 0; i <= var_fldr_len; i++){
+// 		if (strcmp(path, SS_fldrlist[i]) == 0){
+// 			isFldr = 1;
+//             break;
+//         }
+//     }
+
+//     if(strcmp( path, "/" ) == 0 || isFldr){
+//         st->st_mode = S_IFDIR | 0755;
+// 		st->st_nlink = 2;
+//     }
+//     else if(isFile){
+//         st->st_mode = S_IFREG | 0644;
+// 		st->st_nlink = 1;
+// 		st->st_size = 1024;
+//     }
+//     else{
+//         return -ENOENT;
+//     }
+//     return 0;
+// }
+
+// static struct fuse_operations operations = {
+//     .getattr	= do_getattr,
+//     .readdir	= do_readdir,
+//     .read		= do_read,
+//     .mkdir		= do_mkdir,
+//     .mknod		= do_mknod,
+//     .write		= do_write,
+// };
+
 int main(int argc, char **argv)
 {
     /*
     gcc send_delete.c `pkg-config fuse --cflags --libs` -lcurl
     ./a.out  store configure.txt
+
     */
     if (argc != 3)
     {
-        printf("./a.out [File mount path] [File connection info]\n");
-        printf("An example of this can be seen below:\n");
-        printf("gcc send_delete.c `pkg-config fuse --cflags --libs` -lcurl\n");
-        printf("./a.out  store configure.txt\n");
+        printf("./a.out [File mount path] [File connection info]");
         exit(-1);
     }
+    // argv[1] mount file
+    // argv[2] file
     FILE *f;
-    int buflen = 128;
-    char buf[buflen];
+    char buf[100];
 
     f = fopen(argv[2], "r");
     memset(buf, 0, sizeof(buf));
-    fgets(buf, buflen, f);
+    fgets(buf, 100, f);
     // imap
     strcpy(imap, buf);
-    if (strcmp(imap, "") == 0)
-    {
-        printf("Please enter your imap server\n");
-        exit(-1);
-    }
-    printf("imap is %s\n", imap);
     memset(buf, 0, sizeof(buf));
-    fgets(buf, buflen, f);
+    fgets(buf, 100, f);
     // smtp
     strcpy(smtp, buf);
-    if (strcmp(smtp, "") == 0)
-    {
-        printf("Please enter your smtp server\n");
-        exit(-1);
-    }
-    printf("smtp is %s",smtp);
     memset(buf, 0, sizeof(buf));
-    fgets(buf, buflen, f);
+    fgets(buf, 100, f);
     // imap port num
     PORT_i = atoi(buf);
     memset(buf, 0, sizeof(buf));
-    fgets(buf, buflen, f);
+    fgets(buf, 100, f);
     // smtp port num
     PORT_s = atoi(buf);
     memset(buf, 0, sizeof(buf));
-    fgets(buf, buflen, f);
+    fgets(buf, 100, f);
     if (PORT_i == -1 || PORT_s == -1)
     {
         printf("\nPort number error\n");
@@ -332,21 +368,10 @@ int main(int argc, char **argv)
     }
     // username
     strcpy(user, buf);
-    if (strcmp(user, "") == 0)
-    {
-        printf("Please enter your non empty username\n");
-        exit(-1);
-    }
-    printf("user is %s\n", user);
     memset(buf, 0, sizeof(buf));
-    fgets(buf, buflen, f);
+    fgets(buf, 100, f);
     // password
     strcpy(pswd, buf);
-    if (strcmp(pswd, "") == 0)
-    {
-        printf("Please enter your password\n");
-        exit(-1);
-    }
     fclose(f);
 
     // Smail();
@@ -354,7 +379,7 @@ int main(int argc, char **argv)
     printf("\n------------------------------\n");
     printf("%s", pswd);
     // delete_sub("1");
-    send_mail("I am subject", "I am the body part of email");
+    send_mail("hello", "Starboy\n I want a ");
 
     // return fuse_main(argc-1, argv, &operations, NULL);
 }
