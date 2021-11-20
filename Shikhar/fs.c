@@ -796,3 +796,10 @@ int main(int argc, char **argv){
     
     return fuse_main(argc, argv, &operations, NULL);
 }
+/*
+gcc fs.c `pkg-config fuse --cflags --libs` -lcurl
+./a.out  -f store
+
+
+cat bro.txt
+*/
