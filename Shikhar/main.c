@@ -99,9 +99,9 @@ lld searchbysubject(chr a[])
     struct MemoryStruct chunk;
 
     chr *res_s = calloc(strlen(a) + 21 + 2, sizeof(chr));
-    copystring(res_s, "UID SEARCH SUBJECT \"");
-    copystring(res_s, a);
-    copystring(res_s, "\"");
+    strcpy(res_s, "UID SEARCH SUBJECT \"");
+    strcpy(res_s, a);
+    strcpy(res_s, "\"");
 
     // printf("%s", res_s);
 
@@ -143,7 +143,7 @@ lld searchbysubject(chr a[])
     curl_easy_cleanup(curl_handle);
     free(chunk.memory);
     curl_global_cleanup();
-
+    
     if (val == -1)
     {
         printf("Error\n");
@@ -209,12 +209,11 @@ void Smail()
         number[i] = 0;
     }
 
-    memset(number, 0, 5);
     sprintf(number, "%d", UID);
 
     chr *res_s = calloc(strlen(number) + 39, sizeof(chr));
-    copystring(res_s, "imaps://imap.gmail.com:993/INBOX/;UID=");
-    copystring(res_s, number);
+    strcpy(res_s, "imaps://imap.gmail.com:993/INBOX/;UID=");
+    strcpy(res_s, number);
 
     chunk.memory = malloc(1);
     chunk.size = 0;
@@ -240,7 +239,7 @@ void Smail()
         chr *p = chunk.memory;
         chr match_s[] = "Content-Type: text/plain; charset=\"UTF-8\"";
         chr match_s2[] = "Subject: IMP";
-        // copystring(match_s2, "IMP");
+        // strcpy(match_s2, "IMP");
         chr *st = strstr(chunk.memory, match_s);
         lld ind;
         if (st != NULL)
@@ -388,8 +387,8 @@ void get_body(chr read_sub[])
     sprintf(number, "%d", UID);
 
     chr *res_s = calloc(strlen(number) + 39, sizeof(chr));
-    copystring(res_s, "imaps://imap.gmail.com:993/INBOX/;UID=");
-    copystring(res_s, number);
+    strcpy(res_s, "imaps://imap.gmail.com:993/INBOX/;UID=");
+    strcpy(res_s, number);
 
     chunk.memory = malloc(1);
     chunk.size = 0;
@@ -413,8 +412,8 @@ void get_body(chr read_sub[])
     {
         chr *p = chunk.memory;
         chr *match_s = calloc(11 + strlen(read_sub), sizeof(chr));
-        copystring(match_s, "Subject: ");
-        copystring(match_s, read_sub);
+        strcpy(match_s, "Subject: ");
+        strcpy(match_s, read_sub);
         chr *st = strstr(chunk.memory, match_s);
         lld ind = st - p;
         ind += strlen(match_s);
@@ -437,9 +436,9 @@ void get_body(chr read_sub[])
                 k = 0;
                 if (strlen(line) > 0)
                 {
-                    copystring(mail_body_text, line);
-                    copystring(mail_body_text, "\n");
-                    memset(line, 0, 1024);
+                    strcpy(mail_body_text, line);
+                    strcpy(mail_body_text, "\n");
+                    
                     for (lld i = 0; i < 1024; ++i)
                     {
                         line[i] = 0;
@@ -478,9 +477,9 @@ void delete_sub(chr a[])
     sprintf(number, "%d", UID);
 
     chr *res_s = calloc(strlen(number) + 11 + 19, sizeof(chr));
-    copystring(res_s, "UID STORE ");
-    copystring(res_s, number);
-    copystring(res_s, " +FLAGS (\\Deleted)");
+    strcpy(res_s, "UID STORE ");
+    strcpy(res_s, number);
+    strcpy(res_s, " +FLAGS (\\Deleted)");
 
     printf("%s", res_s);
 
@@ -563,8 +562,8 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
 void send_mail(chr SS_sub[], chr SS_text[])
 {
     chr *res_s = calloc(strlen(SS_sub) + 10, sizeof(chr));
-    copystring(res_s, "Subject: ");
-    copystring(res_s, SS_sub);
+    strcpy(res_s, "Subject: ");
+    strcpy(res_s, SS_sub);
     strcpy(sub_, res_s);
     strcpy(text, SS_text);
 
@@ -624,8 +623,8 @@ lld check_file(chr a[])
     for (lld i = 0; i <= files_c; i++)
     {
         chr *res_a = calloc(strlen(all_files[i]) + 2, sizeof(chr));
-        copystring(res_a, "/");
-        copystring(res_a, all_files[i]);
+        strcpy(res_a, "/");
+        strcpy(res_a, all_files[i]);
         if (strcmp(res_a, bb) == 0)
         {
             return i;
@@ -641,8 +640,8 @@ lld check_folder(chr a[])
     for (lld i = 0; i <= fldr_i; i++)
     {
         chr *res_a = calloc(strlen(Folder[i]) + 2, sizeof(chr));
-        copystring(res_a, "/");
-        copystring(res_a, Folder[i]);
+        strcpy(res_a, "/");
+        strcpy(res_a, Folder[i]);
 
         // printf("%d %s %s %d %s %d\n", strlen(all_files[i]), all_files[i], res_a, strlen(res_a), a, strlen(a));
         if (strcmp(res_a, a) == 0)
@@ -767,8 +766,8 @@ static lld SS_read(const chr *path_x, chr *buffer, size_t size, off_t offset, st
         for (lld i = 0; i <= files_r_i; i++)
         {
             chr *res_a = calloc(strlen(Files_in_r[i]) + 2, sizeof(chr));
-            copystring(res_a, "/");
-            copystring(res_a, Files_in_r[i]);
+            strcpy(res_a, "/");
+            strcpy(res_a, Files_in_r[i]);
             if (strcmp(res_a, path) == 0)
             {
                 strcpy(read_sub, sub_in_r[i]);
@@ -842,8 +841,8 @@ static lld SS_write(const chr *path_x, const chr *buffer, size_t size, off_t off
         for (lld i = 0; i <= files_r_i; i++)
         {
             chr *res_a = calloc(strlen(Files_in_r[i]) + 2, sizeof(chr));
-            copystring(res_a, "/");
-            copystring(res_a, Files_in_r[i]);
+            strcpy(res_a, "/");
+            strcpy(res_a, Files_in_r[i]);
             if (strcmp(res_a, path) == 0)
             {
                 strcpy(read_sub, sub_in_r[i]);
@@ -894,7 +893,7 @@ static lld SS_write(const chr *path_x, const chr *buffer, size_t size, off_t off
     }
     chr *x = trim(_BODY);
     strcpy(BODY_COPY, x);
-    copystring(BODY_COPY, buffer);
+    strcpy(BODY_COPY, buffer);
     send_mail(read_sub, BODY_COPY);
     return size;
 }
@@ -929,8 +928,8 @@ static lld SS_truncate(const chr *path_x, off_t size)
         for (lld i = 0; i <= files_r_i; i++)
         {
             chr *res_a = calloc(strlen(Files_in_r[i]) + 2, sizeof(chr));
-            copystring(res_a, "/");
-            copystring(res_a, Files_in_r[i]);
+            strcpy(res_a, "/");
+            strcpy(res_a, Files_in_r[i]);
             if (strcmp(res_a, path) == 0)
             {
                 strcpy(read_sub, sub_in_r[i]);
