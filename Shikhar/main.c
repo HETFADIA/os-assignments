@@ -19,6 +19,34 @@ chr user[128];
 chr pswd[128];
 lld PORT_i = -1;
 lld PORT_s = -1;
+char *strip(char *str)
+{
+    int i = 0;
+    while (str[i] != '\0')
+    {
+        if (str[i] == '\n')
+        {
+            str[i] = '\0';
+            break;
+        }
+        i++;
+    }
+    return str;
+}
+char *split(char *str)
+{
+    int i = 0;
+    while (str[i] != '\0')
+    {
+        if (str[i] == ':')
+        {
+            str[i] = '\0';
+            break;
+        }
+        i++;
+    }
+    return str;
+}
 
 struct MemoryStruct
 {
@@ -58,23 +86,22 @@ chr *trim(chr *a)
             isEmpty = 0;
         }
     }
-    bool _isEmpty = isEmpty;
-    if (!isEmpty)
+    bool _isEmpty = !isEmpty;
+    if (_isEmpty)
     {
 
         return r_t(l_t(a));
     }
-    else
-    {
-        *a = 0;
-        return a;
-    }
+
+    *a = 0;
+    return a;
 }
 
-static size_t
-WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
+static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-    size_t realsize = size * nmemb;
+    size_t realsize;
+    realsize = size;
+    realsize *= nmemb;
     struct MemoryStruct *mem = (struct MemoryStruct *)userp;
 
     chr *ptr = realloc(mem->memory, mem->size + realsize + 1);
@@ -84,10 +111,13 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
         printf("not enough memory (realloc returned NULL)\n");
         return 0;
     }
-    mem->memory = ptr;
-    memcpy(&(mem->memory[mem->size]), contents, realsize);
+    else
+    {
+        mem->memory = ptr;
+        memcpy(&(mem->memory[mem->size]), contents, realsize);
+        mem->memory[mem->size] = 0;
+    }
     mem->size += realsize;
-    mem->memory[mem->size] = 0;
 
     return realsize;
 }
@@ -97,30 +127,41 @@ lld searchbysubject(chr a[])
     CURL *curl_handle;
     CURLcode res;
     struct MemoryStruct chunk;
-
-    chr *res_s = calloc(strlen(a) + 21 + 2, sizeof(chr));
-    strcpy(res_s, "UID SEARCH SUBJECT \"");
-    strcpy(res_s, a);
-    strcpy(res_s, "\"");
+    chunk.memory = malloc(1);
+    chunk.size = 0;
+    char uid_search_sub = "UID SEARCH SUBJECT \"";
+    chr *res_s = calloc(strlen(a) + 21 + 1 + 1, sizeof(chr));
+    strcat(res_s, uid_search_sub);
+    strcat(res_s, a);
+    strcat(res_s, "\"");
 
     // printf("%s", res_s);
 
-    chunk.memory = malloc(1);
-    chunk.size = 0;
     curl_global_init(CURL_GLOBAL_ALL);
     curl_handle = curl_easy_init();
     curl_easy_setopt(curl_handle, CURLOPT_USERNAME, user);
     curl_easy_setopt(curl_handle, CURLOPT_PASSWORD, pswd);
-    curl_easy_setopt(curl_handle, CURLOPT_URL, "imaps://imap.gmail.com:993/INBOX");
-    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, res_s);
+    char *urls = "imaps://imap.gmail.com:993/INBOX";
+    curl_easy_setopt(curl_handle, CURLOPT_URL, urls);
+    if (strlen(res_s) == 0)
+    {
+        printf("UID cant be empty\n");
+    }
+    else
+    {
+
+        curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, res_s);
+    }
+    lld val = 0;
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
-    curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, val);
     res = curl_easy_perform(curl_handle);
-    lld val = -1;
+    val = -1;
     bool _res = res != CURLE_OK;
     if (_res)
     {
+        printf("The curl did not get executed due to some error\n");
         fprintf(stderr, "curl_easy_perform() failed: %s\n",
                 curl_easy_strerror(res));
     }
@@ -129,21 +170,22 @@ lld searchbysubject(chr a[])
         chr *p = chunk.memory;
         while (*p)
         {
-            if (isdigit(*p))
+            bool _isdigit = isdigit(*p);
+            if (_isdigit)
             {
                 val = strtol(p, &p, 10);
                 printf("%d", val);
             }
             else
             {
-                p++;
+                ++p;
             }
         }
     }
     curl_easy_cleanup(curl_handle);
     free(chunk.memory);
     curl_global_cleanup();
-    
+
     if (val == -1)
     {
         printf("Error\n");
@@ -208,26 +250,51 @@ void Smail()
     {
         number[i] = 0;
     }
-
+    chunk.memory = malloc(1);
+    chunk.size = 0;
     sprintf(number, "%d", UID);
 
     chr *res_s = calloc(strlen(number) + 39, sizeof(chr));
-    strcpy(res_s, "imaps://imap.gmail.com:993/INBOX/;UID=");
-    strcpy(res_s, number);
+    strcat(res_s, "imaps://imap.gmail.com:993/INBOX/;UID=");
+    strcat(res_s, number);
 
-    chunk.memory = malloc(1);
-    chunk.size = 0;
     curl_global_init(CURL_GLOBAL_ALL);
     curl_handle = curl_easy_init();
-    curl_easy_setopt(curl_handle, CURLOPT_USERNAME, user);
-    curl_easy_setopt(curl_handle, CURLOPT_PASSWORD, pswd);
-    curl_easy_setopt(curl_handle, CURLOPT_URL, res_s);
+    if (strlen(user) == 0)
+    {
+        printf("User cant be empty\n");
+        return;
+    }
+    else
+    {
+
+        curl_easy_setopt(curl_handle, CURLOPT_USERNAME, user);
+    }
+    if (strlen(pswd) == 0)
+    {
+        printf("Password cant be empty\n");
+        return;
+    }
+    else
+    {
+        curl_easy_setopt(curl_handle, CURLOPT_PASSWORD, pswd);
+    }
+    if (strlen(res_s) == 0)
+    {
+        printf("URL cant be empty\n");
+        return;
+    }
+    else
+    {
+        curl_easy_setopt(curl_handle, CURLOPT_URL, res_s);
+    }
+    lld val;
+    bool flag = 0;
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
     res = curl_easy_perform(curl_handle);
-    lld val;
-    bool flag = res != CURLE_OK;
+    flag = res != CURLE_OK;
     if (flag)
     {
         fprintf(stderr, "curl_easy_perform() failed: %s\n",
@@ -242,16 +309,15 @@ void Smail()
         // strcpy(match_s2, "IMP");
         chr *st = strstr(chunk.memory, match_s);
         lld ind;
-        if (st != NULL)
+        bool flag = st != NULL;
+        if (flag)
         {
-            ind = st - p;
-            ind += strlen(match_s);
+            ind = st - p + strlen(match_s);
         }
         else
         {
-            st = strstr(chunk.memory, match_s2);
-            ind = st - p;
-            ind += strlen(match_s2);
+
+            ind = strstr(chunk.memory, match_s2) - p + strlen(match_s2);
         }
         chr line[1024];
         for (lld i = 0; i < 1024; ++i)
@@ -261,16 +327,20 @@ void Smail()
         memset(line, 0, 1024);
         lld k = 0;
 
-        for (lld i = ind; chunk.memory[i] != '-' && i < strlen(chunk.memory); i++)
+        for (lld i = ind; chunk.memory[i] != '-' && i < strlen(chunk.memory); ++i)
         {
-            if (chunk.memory[i] == '/' || chunk.memory[i] == '.' || chunk.memory[i] == '=' || isalnum(chunk.memory[i]))
+            bool a1 = chunk.memory[i] == '/';
+            bool a2 = chunk.memory[i] == '.';
+            bool a3 = chunk.memory[i] == '=';
+            bool a4 = isalnum(chunk.memory[i]);
+            if (a1 || a2 || a3 || a4)
             {
                 line[k++] = chunk.memory[i];
             }
             else
             {
                 k = 0;
-                if (strlen(line) > 0)
+                if (strlen(line))
                 {
                     printf("%s\n", line);
                     lld isFile = 0;
@@ -286,8 +356,8 @@ void Smail()
                     if (isFile)
                     {
                         lld curr = -1;
-
-                        for (lld i = 0; i < strlen(line); i++)
+                        int strlenline = strlen(line);
+                        for (lld i = 0; i < strlenline; ++i)
                         {
                             if (line[i] == '=')
                             {
@@ -304,8 +374,8 @@ void Smail()
                         chr *x2 = line + curr + 1;
                         line[curr] = 0;
                         lld cnt = 0, cntpnt = -1;
-
-                        for (lld i = 0; i < strlen(x1); i++)
+                        lld strlenx1 = strlen(x1);
+                        for (lld i = 0; i < strlenx1; ++i)
                         {
                             if (x1[i] == '/')
                             {
@@ -323,26 +393,31 @@ void Smail()
                             y1++;
                             chr *y2 = x1 + cntpnt + 1;
                             x1[cntpnt] = 0;
-                            lld dir_loc = find_dir(y1);
+                            lld dir_loc;
+                            dir_loc = find_dir(y1);
                             if (dir_loc == -1)
                             {
-                                printf("corrupted file\n");
+                                printf("Directory not found\n");
                                 exit(-1);
                             }
-                            strcpy(Files_in_d[dir_loc][curr_ind[dir_loc]], y2);
-                            strcpy(sub_in_d[dir_loc][curr_ind[dir_loc]], x2);
-                            files_c++;
-                            strcpy(all_files[files_c], y2);
-                            curr_ind[dir_loc]++;
-                            printf("Files dir %s %s %s\n", y1, y2, x2);
+                            else
+                            {
+
+                                strcpy(Files_in_d[dir_loc][curr_ind[dir_loc]], y2);
+                                strcpy(sub_in_d[dir_loc][curr_ind[dir_loc]], x2);
+                                ++files_c;
+                                strcpy(all_files[files_c], y2);
+                                ++curr_ind[dir_loc];
+                                printf("Files dir %s %s %s\n", y1, y2, x2);
+                            }
                         }
                         else
                         {
-                            files_r_i++;
-                            x1++;
+                            ++files_r_i;
+                            x1 = x1 + 1;
                             strcpy(Files_in_r[files_r_i], x1);
                             strcpy(sub_in_r[files_r_i], x2);
-                            files_c++;
+                            ++files_c;
                             strcpy(all_files[files_c], x1);
                             printf("File root %s %s\n", x1, x2);
                         }
@@ -387,24 +462,48 @@ void get_body(chr read_sub[])
     sprintf(number, "%d", UID);
 
     chr *res_s = calloc(strlen(number) + 39, sizeof(chr));
-    strcpy(res_s, "imaps://imap.gmail.com:993/INBOX/;UID=");
-    strcpy(res_s, number);
+    strcat(res_s, "imaps://imap.gmail.com:993/INBOX/;UID=");
+    strcat(res_s, number);
 
     chunk.memory = malloc(1);
     chunk.size = 0;
     curl_global_init(CURL_GLOBAL_ALL);
     curl_handle = curl_easy_init();
-    curl_easy_setopt(curl_handle, CURLOPT_USERNAME, user);
-    curl_easy_setopt(curl_handle, CURLOPT_PASSWORD, pswd);
-    curl_easy_setopt(curl_handle, CURLOPT_URL, res_s);
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    if (strlen(user) == 0)
+    {
+        printf("The username can't be empty\n");
+    }
+    else
+    {
+
+        curl_easy_setopt(curl_handle, CURLOPT_USERNAME, user);
+    }
+    if (strlen(pswd) == 0)
+    {
+        printf("The password can't be empty\n");
+    }
+    else
+    {
+        curl_easy_setopt(curl_handle, CURLOPT_PASSWORD, pswd);
+    }
+    if (strlen(res_s) == 0)
+    {
+        printf("The url can't be empty\n");
+    }
+    else
+    {
+        curl_easy_setopt(curl_handle, CURLOPT_URL, res_s);
+        curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    }
+    int length = 1024;
+    chr *mail_body_text = calloc(length, sizeof(chr));
+    lld val = 0;
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
     res = curl_easy_perform(curl_handle);
-    lld val;
-    chr *mail_body_text = calloc(1024, sizeof(chr));
     if (res != CURLE_OK)
     {
+        printf("Error occured in curl\n");
         fprintf(stderr, "curl_easy_perform() failed: %s\n",
                 curl_easy_strerror(res));
     }
@@ -412,8 +511,8 @@ void get_body(chr read_sub[])
     {
         chr *p = chunk.memory;
         chr *match_s = calloc(11 + strlen(read_sub), sizeof(chr));
-        strcpy(match_s, "Subject: ");
-        strcpy(match_s, read_sub);
+        strcat(match_s, "Subject: ");
+        strcat(match_s, read_sub);
         chr *st = strstr(chunk.memory, match_s);
         lld ind = st - p;
         ind += strlen(match_s);
@@ -424,26 +523,28 @@ void get_body(chr read_sub[])
             line[i] = 0;
         }
         lld k = 0;
-
-        for (lld i = ind; i < strlen(chunk.memory); i++)
+        int strlen_chunk = strlen(chunk.memory);
+        for (lld i = ind; i < strlen_chunk; ++i)
         {
-            if (chunk.memory[i] != '\n')
+            bool end_line = chunk.memory[i] == '\n';
+            if (end_line)
             {
                 line[k++] = chunk.memory[i];
             }
             else
             {
-                k = 0;
-                if (strlen(line) > 0)
+                int strlenline = strlen(line);
+                if (strlenline)
                 {
-                    strcpy(mail_body_text, line);
-                    strcpy(mail_body_text, "\n");
-                    
+                    strcat(mail_body_text, line);
+                    strcat(mail_body_text, "\n");
+
                     for (lld i = 0; i < 1024; ++i)
                     {
                         line[i] = 0;
                     }
                 }
+                k = 0;
             }
         }
         printf("The body is %s ", mail_body_text);
@@ -476,28 +577,55 @@ void delete_sub(chr a[])
 
     sprintf(number, "%d", UID);
 
-    chr *res_s = calloc(strlen(number) + 11 + 19, sizeof(chr));
-    strcpy(res_s, "UID STORE ");
-    strcpy(res_s, number);
-    strcpy(res_s, " +FLAGS (\\Deleted)");
+    chr *res_s = calloc(strlen(number) + 1 + strlen("UID STORE ") + 19, sizeof(chr));
+    char uid_st = "UID STORE ";
+    strcat(res_s, uid_st);
+    strcat(res_s, number);
+    strcat(res_s, " +FLAGS (\\Deleted)");
 
-    printf("%s", res_s);
+    if (strlen(res_s))
+    {
+        printf("The res= %s", res_s);
+    }
 
     chunk.memory = malloc(1);
     chunk.size = 0;
     curl_global_init(CURL_GLOBAL_ALL);
     curl_handle = curl_easy_init();
-    curl_easy_setopt(curl_handle, CURLOPT_USERNAME, user);
-    curl_easy_setopt(curl_handle, CURLOPT_PASSWORD, pswd);
-    curl_easy_setopt(curl_handle, CURLOPT_URL, "imaps://imap.gmail.com:993/INBOX");
-    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, res_s);
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    if (strlen(user) == 0)
+    {
+        printf("The username can't be empty\n");
+    }
+    else
+    {
+        curl_easy_setopt(curl_handle, CURLOPT_USERNAME, user);
+    }
+    if (strlen(pswd) == 0)
+    {
+        printf("The password can't be empty\n");
+    }
+    else
+    {
+        curl_easy_setopt(curl_handle, CURLOPT_PASSWORD, pswd);
+    }
+    char *inbox_url = "imaps://imap.gmail.com:993/INBOX";
+    curl_easy_setopt(curl_handle, CURLOPT_URL, inbox_url);
+    if (strlen(res_s) == 0)
+    {
+        printf("The url can't be empty\n");
+    }
+    else
+    {
+        curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, res_s);
+        curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    }
+    lld val = 0;
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
     res = curl_easy_perform(curl_handle);
-    lld val;
     if (res != CURLE_OK)
     {
+        printf("Error occured in curl file\n");
         fprintf(stderr, "curl_easy_perform() failed: %s\n",
                 curl_easy_strerror(res));
     }
@@ -522,25 +650,30 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
 {
     struct upload_status *upload_ctx = (struct upload_status *)userp;
     chr data[1025];
-    memset(data, 0, 1024);
-    for (lld i = 0; i < 1024; ++i)
+    for (lld i = 0; i < 1025; ++i)
     {
         data[i] = 0;
     }
 
-    if (size * nmemb < 1)
+    if (size * nmemb < 1 || size == 0 || nmemb == 0)
+    {
         return 0;
-
-    if (upload_ctx->lines_read == 0)
+    }
+    int value = upload_ctx->lines_read;
+    if (value == 0)
     {
         // subject
         strcpy(data, sub_);
     }
-    else if (upload_ctx->lines_read == 1 || upload_ctx->lines_read == 3)
+    else if (value == 1)
     {
         strcpy(data, "\r\n");
     }
-    else if (upload_ctx->lines_read == 4)
+    else if (value == 3)
+    {
+        strcpy(data, "\r\n");
+    }
+    else if (value == 4)
     {
         return 0;
     }
@@ -553,22 +686,25 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
     {
         size_t len = strlen(data);
         memcpy(ptr, data, len);
-        upload_ctx->lines_read++;
+        ++upload_ctx->lines_read;
         return len;
     }
     return 0;
 }
-
+char * email_name=NULL;
+char * url_name=NULL;
 void send_mail(chr SS_sub[], chr SS_text[])
 {
+    CURL *curl;
+    CURLcode res;
+    res = CURLE_OK;
     chr *res_s = calloc(strlen(SS_sub) + 10, sizeof(chr));
-    strcpy(res_s, "Subject: ");
-    strcpy(res_s, SS_sub);
+    chr start = "Subject: ";
+    strcat(res_s, start);
+    strcat(res_s, SS_sub);
     strcpy(sub_, res_s);
     strcpy(text, SS_text);
-
-    CURL *curl;
-    CURLcode res = CURLE_OK;
+    printf("Here we are sending mail with subject %s and body %s\n", SS_sub, SS_text);
     struct curl_slist *recipients = NULL;
     struct upload_status upload_ctx;
 
@@ -577,20 +713,45 @@ void send_mail(chr SS_sub[], chr SS_text[])
     curl = curl_easy_init();
     if (curl)
     {
-        curl_easy_setopt(curl, CURLOPT_URL, "smtps://smtp.gmail.com");
-        recipients = curl_slist_append(recipients, "testhailaude@gmail.com");
-        curl_easy_setopt(curl, CURLOPT_USERNAME, user);
-        curl_easy_setopt(curl, CURLOPT_PASSWORD, pswd);
-        curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
+        printf("logging in used password etc\n");
+        curl_easy_setopt(curl, CURLOPT_URL, url_name);
+        recipients = curl_slist_append(recipients, email_name);
+        if (strlen(user) == 0)
+        {
+            printf("No user\n");
+        }
+        else
+        {
+            curl_easy_setopt(curl, CURLOPT_USERNAME, user);
+        }
+        if (strlen(pswd) == 0)
+        {
+            printf("No password\n");
+        }
+        else
+        {
+            curl_easy_setopt(curl, CURLOPT_PASSWORD, pswd);
+            curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
+        }
+        int flag = 0;
         curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);
         curl_easy_setopt(curl, CURLOPT_READDATA, &upload_ctx);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, flag);
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+
         res = curl_easy_perform(curl);
+        flag = res != CURLE_OK;
         if (res != CURLE_OK)
+        {
+            printf("The curl failed due to to an error\n");
             fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        curl_slist_free_all(recipients);
-        curl_easy_cleanup(curl);
+        }
+        else
+        {
+
+            curl_slist_free_all(recipients);
+            curl_easy_cleanup(curl);
+        }
     }
 }
 
@@ -603,12 +764,12 @@ lld check_file(chr a[])
     {
         bb[i] = 0;
     }
-
-    for (lld i = 0; i < strlen(a); i++)
+    int strlena = strlen(a);
+    for (lld i = 0; i < strlena; ++i)
     {
         if (a[i] == '/')
         {
-            cntpnt += 1;
+            ++cntpnt;
             if (cntpnt == 2)
             {
                 strcpy(bb, a + i);
@@ -623,8 +784,8 @@ lld check_file(chr a[])
     for (lld i = 0; i <= files_c; i++)
     {
         chr *res_a = calloc(strlen(all_files[i]) + 2, sizeof(chr));
-        strcpy(res_a, "/");
-        strcpy(res_a, all_files[i]);
+        strcat(res_a, "/");
+        strcat(res_a, all_files[i]);
         if (strcmp(res_a, bb) == 0)
         {
             return i;
@@ -637,14 +798,15 @@ lld check_file(chr a[])
 lld check_folder(chr a[])
 {
 
-    for (lld i = 0; i <= fldr_i; i++)
+    for (lld i = 0; i <= fldr_i; ++i)
     {
-        chr *res_a = calloc(strlen(Folder[i]) + 2, sizeof(chr));
-        strcpy(res_a, "/");
-        strcpy(res_a, Folder[i]);
+        chr *res_a = calloc(strlen(Folder[i]) + 1 + strlen("/"), sizeof(chr));
+        res_a[0] = "/";
+        strcat(res_a, Folder[i]);
 
         // printf("%d %s %s %d %s %d\n", strlen(all_files[i]), all_files[i], res_a, strlen(res_a), a, strlen(a));
-        if (strcmp(res_a, a) == 0)
+        bool flag = strcmp(res_a, a) == 0;
+        if (flag)
         {
             printf("\n\n folder %s \n\n", a);
             return i;
@@ -658,36 +820,39 @@ static lld SS_getattr(const chr *path_x, struct stat *st)
 {
     st->st_uid = getuid();
     st->st_gid = getgid();
-    st->st_atime = time(NULL);
-    st->st_mtime = time(NULL);
-
-    // bruh
     chr path[300];
-    memset(path, 0, 300);
     for (lld i = 0; i < 300; ++i)
     {
         path[i] = 0;
     }
+    st->st_atime = st->st_mtime = time(NULL);
+
+    // bruh
 
     strcpy(path, path_x);
-
-    printf("path asked for %s\n", path_x);
+    if (strlen(path_x))
+    {
+        printf("The path is %s", path_x);
+    }
 
     if (strcmp(path, "/") == 0)
     {
-        st->st_mode = S_IFDIR | 0755;
         st->st_nlink = 2;
+        st->st_mode = S_IFDIR | 0755;
+        return 0;
     }
     else if (check_folder(path) != -1)
     {
         st->st_mode = S_IFDIR | 0755;
         st->st_nlink = 2;
+        return 0;
     }
     else if (check_file(path) != -1)
     {
         st->st_mode = S_IFREG | 0644;
-        st->st_nlink = 1;
         st->st_size = 1024;
+        st->st_nlink = 1;
+        return 0;
     }
     else
     {
@@ -698,10 +863,9 @@ static lld SS_getattr(const chr *path_x, struct stat *st)
 
 static lld SS_readdir(const chr *path_x, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
-    printf("--> Getting The List of Files of %s\n", path_x);
+    printf("The list of files on path = %s\n", path_x);
 
     chr path[300];
-    memset(path, 0, 300);
     for (lld i = 0; i < 300; ++i)
     {
         path[i] = 0;
@@ -712,14 +876,13 @@ static lld SS_readdir(const chr *path_x, void *buffer, fuse_fill_dir_t filler, o
     filler(buffer, ".", NULL, 0);  // Current Directory
     filler(buffer, "..", NULL, 0); // Parent Directory
 
-    // return 0;
-    if (strcmp(path, "/") == 0) // If the user is trying to show the files/directories of the root directory show the following
+    if (path[0] == '/') // If the user is trying to show the files/directories of the root directory show the following
     {
-        for (lld i = 0; i <= fldr_i; i++)
+        for (lld i = 0; i <= fldr_i; ++i)
         {
             filler(buffer, Folder[i], NULL, 0);
         }
-        for (lld i = 0; i <= files_r_i; i++)
+        for (lld i = 0; i <= files_r_i; ++i)
         {
             filler(buffer, Files_in_r[i], NULL, 0);
         }
@@ -727,7 +890,7 @@ static lld SS_readdir(const chr *path_x, void *buffer, fuse_fill_dir_t filler, o
     else
     {
         lld dir_loc = check_folder(path);
-        for (lld i = 0; i < curr_ind[dir_loc]; i++)
+        for (lld i = 0; i < curr_ind[dir_loc]; ++i)
         {
             filler(buffer, Files_in_d[dir_loc][i], NULL, 0);
         }
@@ -739,7 +902,6 @@ static lld SS_readdir(const chr *path_x, void *buffer, fuse_fill_dir_t filler, o
 static lld SS_read(const chr *path_x, chr *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     chr path[300];
-    memset(path, 0, 300);
     for (lld i = 0; i < 300; ++i)
     {
         path[i] = 0;
@@ -749,11 +911,11 @@ static lld SS_read(const chr *path_x, chr *buffer, size_t size, off_t offset, st
     chr read_sub[300];
     lld s_dash_pos = -1;
 
-    for (lld i = 0; i < strlen(path); i++)
+    for (lld i = 0; i < strlen(path); ++i)
     {
         if (path[i] == '/')
         {
-            cntpnt += 1;
+            ++cntpnt;
             if (cntpnt == 2)
             {
                 s_dash_pos = i;
@@ -763,12 +925,19 @@ static lld SS_read(const chr *path_x, chr *buffer, size_t size, off_t offset, st
     }
     if (cntpnt == 1)
     {
-        for (lld i = 0; i <= files_r_i; i++)
+        for (lld i = 0; i <= files_r_i; ++i)
         {
-            chr *res_a = calloc(strlen(Files_in_r[i]) + 2, sizeof(chr));
-            strcpy(res_a, "/");
-            strcpy(res_a, Files_in_r[i]);
-            if (strcmp(res_a, path) == 0)
+            int req_size = strlen(Files_in_r[i]) + strlen("/") + 1;
+            chr *res_a = calloc(strlen(Files_in_r[i]) + strlen("/") + 1, sizeof(chr));
+            int strlen_a = strlen(res_a);
+            for (int i = 0; i < strlen_a; ++i)
+            {
+                res_a[i] = 0;
+            }
+            strcat(res_a, "/");
+            strcat(res_a, Files_in_r[i]);
+            bool flag = strcmp(res_a, path) == 0;
+            if (flag)
             {
                 strcpy(read_sub, sub_in_r[i]);
                 printf("%s", read_sub);
@@ -779,22 +948,21 @@ static lld SS_read(const chr *path_x, chr *buffer, size_t size, off_t offset, st
     }
     else
     {
-        chr _fldr[300], _file[300];
-        memset(_file, 0, 300);
+        chr _fldr[300];
+        chr _file[300];
         for (lld i = 0; i < 300; ++i)
         {
             _file[i] = 0;
         }
-        memset(_fldr, 0, 300);
         for (lld i = 0; i < 300; ++i)
         {
             _fldr[i] = 0;
         }
-        for (lld i = 0; i < s_dash_pos; i++)
+        for (lld i = 0; i < s_dash_pos; ++i)
         {
             _fldr[i] = path[i];
         }
-        for (lld i = s_dash_pos + 1; i < strlen(path); i++)
+        for (lld i = s_dash_pos + 1; i < strlen(path); ++i)
         {
             _file[i - s_dash_pos - 1] = path[i];
         }
@@ -804,7 +972,10 @@ static lld SS_read(const chr *path_x, chr *buffer, size_t size, off_t offset, st
         strcpy(read_sub, sub_in_d[dir_loc][file_loc]);
         printf("\n%s %s %d\n", _file, _fldr, s_dash_pos);
     }
-    printf("\nThis is the sub = %s\n", read_sub);
+    if (strlen(read_sub))
+    {
+        printf("The subject is %s\n", read_sub);
+    }
     get_body(read_sub);
     memcpy(buffer, _BODY, 4096);
 
@@ -823,12 +994,12 @@ static lld SS_write(const chr *path_x, const chr *buffer, size_t size, off_t off
     lld cntpnt = 0;
     chr read_sub[300];
     lld s_dash_pos = -1;
-
-    for (lld i = 0; i < strlen(path); i++)
+    lld strlenpath = strlen(path);
+    for (lld i = 0; i < strlenpath; i++)
     {
         if (path[i] == '/')
         {
-            cntpnt += 1;
+            cntpnt++;
             if (cntpnt == 2)
             {
                 s_dash_pos = i;
@@ -841,9 +1012,10 @@ static lld SS_write(const chr *path_x, const chr *buffer, size_t size, off_t off
         for (lld i = 0; i <= files_r_i; i++)
         {
             chr *res_a = calloc(strlen(Files_in_r[i]) + 2, sizeof(chr));
-            strcpy(res_a, "/");
-            strcpy(res_a, Files_in_r[i]);
-            if (strcmp(res_a, path) == 0)
+            strcat(res_a, "/");
+            strcat(res_a, Files_in_r[i]);
+            bool flag = strcmp(res_a, path) == 0;
+            if (flag)
             {
                 strcpy(read_sub, sub_in_r[i]);
                 printf("%s", read_sub);
@@ -877,6 +1049,10 @@ static lld SS_write(const chr *path_x, const chr *buffer, size_t size, off_t off
 
         lld file_loc = file_in_dir(_file, dir_loc);
         strcpy(read_sub, sub_in_d[dir_loc][file_loc]);
+        if (file_loc == -1)
+        {
+            printf("File not found");
+        }
     }
     get_body(read_sub);
     delete_sub(read_sub);
@@ -893,16 +1069,16 @@ static lld SS_write(const chr *path_x, const chr *buffer, size_t size, off_t off
     }
     chr *x = trim(_BODY);
     strcpy(BODY_COPY, x);
-    strcpy(BODY_COPY, buffer);
+    strcat(BODY_COPY, buffer);
     send_mail(read_sub, BODY_COPY);
     return size;
 }
 
 static lld SS_truncate(const chr *path_x, off_t size)
 {
-    chr path[300];
-    memset(path, 0, 300);
-    for (lld i = 0; i < 300; ++i)
+    int path_xlen=strlen(path_x);
+    chr path[path_xlen];
+    for (lld i = 0; i < path_xlen; ++i)
     {
         path[i] = 0;
     }
@@ -910,8 +1086,8 @@ static lld SS_truncate(const chr *path_x, off_t size)
     lld cntpnt = 0;
     chr read_sub[300];
     lld s_dash_pos = -1;
-
-    for (lld i = 0; i < strlen(path); i++)
+    lld strlenpath_ = strlen(path);
+    for (lld i = 0; i < strlenpath_; i++)
     {
         if (path[i] == '/')
         {
@@ -928,9 +1104,10 @@ static lld SS_truncate(const chr *path_x, off_t size)
         for (lld i = 0; i <= files_r_i; i++)
         {
             chr *res_a = calloc(strlen(Files_in_r[i]) + 2, sizeof(chr));
-            strcpy(res_a, "/");
-            strcpy(res_a, Files_in_r[i]);
-            if (strcmp(res_a, path) == 0)
+            strcat(res_a, "/");
+            strcat(res_a, Files_in_r[i]);
+            bool check = strcmp(res_a, path) == 0;
+            if (check)
             {
                 strcpy(read_sub, sub_in_r[i]);
                 printf("%s", read_sub);
@@ -964,7 +1141,15 @@ static lld SS_truncate(const chr *path_x, off_t size)
 
         lld file_loc = file_in_dir(_file, dir_loc);
         strcpy(read_sub, sub_in_d[dir_loc][file_loc]);
-        printf("\n%s %s %d\n", _file, _fldr, s_dash_pos);
+        if (file_loc != -1)
+        {
+
+            printf("file is %s", _file);
+        }
+        else
+        {
+            printf("file not found");
+        }
     }
     get_body(read_sub);
     delete_sub(read_sub);
@@ -978,15 +1163,11 @@ static lld SS_truncate(const chr *path_x, off_t size)
     {
         BODY_COPY[i] = '\0';
     }
-    memset(BODY_COPY, 0, 1024);
-    for (lld i = 0; i < 1024; i++)
-    {
-        BODY_COPY[i] = '\0';
-    }
 
     chr *x = trim(_BODY);
     printf("This is what we read %s\n", _BODY);
-    if (size < strlen(x))
+    bool xlen = strlen(x);
+    if (size < xlen)
     {
 
         *(x + size) = 0;
@@ -996,16 +1177,16 @@ static lld SS_truncate(const chr *path_x, off_t size)
 
     return 0;
 }
-
+int debug(int x)
+{
+    printf("The debugged integer is %d", x);
+}
 static struct fuse_operations operations = {
-    .getattr = SS_getattr,
-    .readdir = SS_readdir,
     .read = SS_read,
+    .getattr = SS_getattr,
     .write = SS_write,
     .truncate = SS_truncate,
-    // .mkdir		= do_mkdir,
-    // .mknod		= do_mknod,
-    // .rm
+    .readdir = SS_readdir,
 };
 
 lld main(lld argc, chr **argv)
@@ -1035,6 +1216,7 @@ lld main(lld argc, chr **argv)
         printf("Please enter your imap server\n");
         exit(-1);
     }
+    
     printf("imap is %s\n", imap);
     memset(buf, 0, sizeof(buf));
     for (lld i = 0; i < buflen; ++i)
@@ -1048,6 +1230,11 @@ lld main(lld argc, chr **argv)
     {
         printf("Please enter your smtp server\n");
         exit(-1);
+    }
+    else{
+        int length=strlen(smtp);
+        url_name=(char*)malloc(length+1);
+        strcpy(url_name,smtp);
     }
     printf("smtp is %s", smtp);
     memset(buf, 0, sizeof(buf));
@@ -1073,6 +1260,10 @@ lld main(lld argc, chr **argv)
         printf("Please enter your non empty username\n");
         exit(-1);
     }
+    else{
+        email_name=(char *)malloc(strlen(user)+1);
+        strcpy(email_name,user);
+    }
     printf("user is %s\n", user);
     memset(buf, 0, sizeof(buf));
     fgets(buf, buflen, f);
@@ -1096,7 +1287,11 @@ lld main(lld argc, chr **argv)
 gcc fs.c `pkg-config fuse --cflags --libs` -lcurl
 ./a.out  -f store
 
-
+ls
 cat bro.txt
 echo "hello" > bro.txt
+cd folder
+cd ..
+ll
+l
 */
