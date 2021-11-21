@@ -28,3 +28,15 @@ gcc main.c `pkg-config fuse --cflags --libs` -lcurl
 ./a.out  -f store
 
 Here store can be replaced by the path of the directoy you made
+
+Now open the new terminal and execute the below command
+cd store
+Here we can use all the commands of the file system
+some of the examples are listed below
+1. ls
+2. cd
+3. cat bro.txt
+4. ll
+5. cd ..
+6. cd folder
+7. echo "hello" > file.txt
