@@ -78,10 +78,11 @@ chr *trim(chr *a)
     lld isEmpty = 1;
     lld strlena = strlen(a);
 
+    bool _isalnum;
     for (lld i = 0; i < strlena; i++)
     {
-        bool _isalnum = isalnum(a[i]);
-        if (isalnum(a[i]))
+        _isalnum = ('0' <= a[i] && a[i] <= '9') || ('a' <= a[i] && a[i] <= 'z') || ('A' <= a[i] && a[i] <= 'Z');
+        if (_isalnum)
         {
             isEmpty = 0;
         }
@@ -92,8 +93,7 @@ chr *trim(chr *a)
 
         return r_t(l_t(a));
     }
-
-    *a = 0;
+    a[0] = '\0';
     return a;
 }
 
@@ -200,12 +200,12 @@ lld searchbysubject(chr a[])
 lld fldr_i = -1;
 lld files_r_i = -1;
 lld files_c = -1;
-chr Folder[1024][300];
-lld curr_ind[1024];
-chr Files_in_d[1024][1024][300];
-chr Files_in_r[1024][300];
-chr sub_in_r[1024][300];
-chr sub_in_d[1024][1024][300];
+chr Folder[1500][300];
+lld curr_ind[1500];
+chr Files_in_d[1500][1500][300];
+chr Files_in_r[1500][300];
+chr sub_in_r[1500][300];
+chr sub_in_d[1500][1500][300];
 chr all_files[10000][300];
 void initialize()
 {
@@ -240,7 +240,11 @@ lld file_in_dir(chr a[], lld dir_loc)
     }
     return -1;
 }
-
+void exitcode(char *s)
+{
+    printf("%s\n", s);
+    exit(-1);
+}
 void Smail()
 {
     lld UID = searchbysubject("IMP");
@@ -307,27 +311,18 @@ void Smail()
     {
 
         chr *p = chunk.memory;
-        chr match_s[] = "Content-Type: text/plain; charset=\"UTF-8\"";
         chr match_s2[] = "Subject: IMP";
-        // strcpy(match_s2, "IMP");
-        chr *st = strstr(chunk.memory, match_s);
-        lld ind;
-        bool flag = st != NULL;
-        if (flag)
-        {
-            ind = st - p + strlen(match_s);
-        }
-        else
-        {
 
-            ind = strstr(chunk.memory, match_s2) - p + strlen(match_s2);
-        }
-        chr line[1024];
-        for (lld i = 0; i < 1024; ++i)
+        lld ind;
+
+        ind = strstr(chunk.memory, match_s2) - p + strlen(match_s2);
+
+        chr line[1500];
+        for (lld i = 0; i < 1500; ++i)
         {
             line[i] = 0;
         }
-        memset(line, 0, 1024);
+        memset(line, 0, 1500);
         lld k = 0;
 
         for (lld i = ind; chunk.memory[i] != '-' && i < strlen(chunk.memory); ++i)
@@ -336,7 +331,8 @@ void Smail()
             bool a2 = chunk.memory[i] == '.';
             bool a3 = chunk.memory[i] == '=';
             bool a4 = isalnum(chunk.memory[i]);
-            if (a1 || a2 || a3 || a4)
+            bool a5 = chunk.memory[i] == '_';
+            if (a1 || a2 || a3 || a4 || a5)
             {
                 line[k++] = chunk.memory[i];
             }
@@ -346,87 +342,122 @@ void Smail()
                 if (strlen(line))
                 {
                     printf("%s\n", line);
-                    char * isFile ;
+                    char *isFile;
                     lld strlenline = strlen(line);
-                    
-                    
-                    isFile=strstr(line,"=");
-                    
+
+                    isFile = strstr(line, "=");
+
                     if (isFile)
                     {
-                        char * fft=line;
-                        int indexa=isFile-fft;
+                        char *fft = line;
+                        int indexa = isFile - fft;
                         lld curr = -1;
                         int strlenline = strlen(line);
-                        
-                        curr=indexa;
-                        chr *x1 = line;
-                        chr *x2 = line + curr + 1;
-                        line[curr] = 0;
-                        lld cnt = 0, cntpnt = -1;
+
+                        curr = indexa;
+                        chr *x1, *x2;
+                        x1 = line;
+                        x2 = line + curr + 1;
+                        line[curr] = '\0';
+                        lld cntpnt = -1;
                         lld strlenx1 = strlen(x1);
                         for (lld i = 0; i < strlenx1; ++i)
                         {
                             if (x1[i] == '/')
                             {
-                                cnt=1;   
-                                for(int j=i+1;j<strlenx1;++j){
-                                    if(x1[j]=='/'){
-                                        cntpnt=j;
-                                        cnt=2;
+                                for (int j = i + 1; j < strlenx1; ++j)
+                                {
+                                    if (x1[j] == '/')
+                                    {
+                                        cntpnt = j;
                                         break;
                                     }
                                 }
                                 break;
                             }
                         }
-                        if (cntpnt!=-1)
+                        if (cntpnt != -1)
                         {
-                            chr *y1 = x1;
-                            y1++;
-                            chr *y2 = x1 + cntpnt + 1;
-                            x1[cntpnt] = 0;
-                            lld dir_loc;
-                            dir_loc = find_dir(y1);
+                            ++x1;
+                            chr *token1 = strtok(x1, "/");
+                            chr *theta1 = token1;
+                            token1 = strtok(NULL, "/");
+                            chr *theta2 = token1;
+                            lld dir_loc = -1;
+
+                            for (lld i = 0; i <= fldr_i; ++i)
+                            {
+                                if (strcmp(Folder[i], theta1) == 0)
+                                {
+                                    dir_loc = i;
+                                    break;
+                                }
+                            }
                             if (dir_loc == -1)
                             {
-                                printf("Directory not found\n");
-                                exit(-1);
+                                exitcode("We could not find the directory\n");
                             }
                             else
                             {
+                                strcpy(Files_in_d[dir_loc][curr_ind[dir_loc]], theta2);
+                                printf("The data %s is copied in the file inside directory\n", theta2);
+                                strcpy(sub_in_d[dir_loc][curr_ind[dir_loc]++], x2);
+                                strcpy(all_files[++files_c], theta2);
 
-                                strcpy(Files_in_d[dir_loc][curr_ind[dir_loc]], y2);
-                                strcpy(sub_in_d[dir_loc][curr_ind[dir_loc]], x2);
-                                ++files_c;
-                                strcpy(all_files[files_c], y2);
-                                ++curr_ind[dir_loc];
-                                printf("Files dir %s %s %s\n", y1, y2, x2);
+                                if (strlen(theta1))
+                                {
+                                    printf("The folder is %s", theta1);
+                                }
+                                if (strlen(theta2))
+                                {
+                                    printf("The file is %s", theta2);
+                                }
                             }
                         }
                         else
                         {
-                            ++files_r_i;
+                            files_r_i = files_r_i + 1;
                             x1 = x1 + 1;
-                            strcpy(Files_in_r[files_r_i], x1);
+                            lld j = 0;
+                            while (x1[j] != '\0')
+                            {
+                                Files_in_r[files_r_i][j] = x1[j];
+                                ++j;
+                            }
+
                             strcpy(sub_in_r[files_r_i], x2);
-                            ++files_c;
-                            strcpy(all_files[files_c], x1);
-                            printf("File root %s %s\n", x1, x2);
+
+                            strcpy(all_files[++files_c], x1);
+                            if (strlen(x1))
+                            {
+                                printf("The file is %s\n", x1);
+                            }
+                            if (strlen(x2))
+                            {
+                                printf("The data is %s\n", x2);
+                            }
                         }
                     }
                     else
                     {
-                        chr *ch = line;
-                        ch++; // remove '/' from the path
-                        fldr_i++;
-                        strcpy(Folder[fldr_i], ch);
-                        printf("Folder %s\n", ch);
+                        chr *char_pointer = line + 1;
+
+                        fldr_i = fldr_i + 1;
+                        lld j = 0;
+                        while (char_pointer[j] != '\0')
+                        {
+                            Folder[fldr_i][j] = char_pointer[j];
+                            ++j;
+                        }
+                        printf("Folder %s\n", char_pointer);
+                        if (strlen(char_pointer))
+                        {
+                            printf("The folder we get is  %s\n", char_pointer);
+                        }
                     }
-                    memset(line, 0, 1024);
-                    for (lld i = 0; i < 1024; ++i)
+                    for (lld i = 0; i < 1500; ++i)
                     {
-                        line[i] = 0;
+                        line[i] = '\0';
                     }
                 }
             }
@@ -488,7 +519,7 @@ void get_body(chr read_sub[])
         curl_easy_setopt(curl_handle, CURLOPT_URL, res_s);
         curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     }
-    int length = 1024;
+    int length = 1500;
     chr *mail_body_text = calloc(length, sizeof(chr));
     lld val = 0;
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
@@ -509,9 +540,9 @@ void get_body(chr read_sub[])
         chr *st = strstr(chunk.memory, match_s);
         lld ind = st - p;
         ind += strlen(match_s);
-        chr line[1024];
-        memset(line, 0, 1024);
-        for (lld i = 0; i < 1024; ++i)
+        chr line[1500];
+        memset(line, 0, 1500);
+        for (lld i = 0; i < 1500; ++i)
         {
             line[i] = 0;
         }
@@ -532,7 +563,7 @@ void get_body(chr read_sub[])
                     strcat(mail_body_text, line);
                     strcat(mail_body_text, "\n");
 
-                    for (lld i = 0; i < 1024; ++i)
+                    for (lld i = 0; i < 1500; ++i)
                     {
                         line[i] = 0;
                     }
@@ -542,8 +573,8 @@ void get_body(chr read_sub[])
         }
         printf("The body is %s ", mail_body_text);
         chr *trimmed_text = trim(mail_body_text);
-        memset(_BODY, 0, 1024);
-        for (lld i = 0; i < 1024; ++i)
+        memset(_BODY, 0, 1500);
+        for (lld i = 0; i < 1500; ++i)
         {
             _BODY[i] = 0;
         }
@@ -631,7 +662,7 @@ void delete_sub(chr a[])
     curl_global_cleanup();
 }
 
-chr text[1024];
+chr text[1500];
 chr sub_[30];
 
 struct upload_status
@@ -642,8 +673,8 @@ struct upload_status
 static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
 {
     struct upload_status *upload_ctx = (struct upload_status *)userp;
-    chr data[1025];
-    for (lld i = 0; i < 1025; ++i)
+    chr data[1500];
+    for (lld i = 0; i < 1500; ++i)
     {
         data[i] = 0;
     }
@@ -752,59 +783,44 @@ lld check_file(chr a[])
 {
     lld cntpnt = 0;
     chr bb[300];
-    memset(bb, 0, sizeof(bb));
     for (lld i = 0; i < 300; ++i)
     {
         bb[i] = 0;
     }
-    int strlena = strlen(a);
-    for (lld i = 0; i < strlena; ++i)
+    chr *charpointer = a + 1;
+    chr *token1 = strtok(charpointer, "/");
+    chr *theta1 = token1;
+    token1 = strtok(NULL, "/");
+    chr *theta2 = token1;
+    char *another = theta2;
+    if (theta2 == NULL)
     {
-        if (a[i] == '/')
-        {
-            ++cntpnt;
-            if (cntpnt == 2)
-            {
-                strcpy(bb, a + i);
-                break;
-            }
-        }
+        another = theta1;
     }
-    if (cntpnt != 2)
+    lld j = 0;
+    while (j <= files_c)
     {
-        strcpy(bb, a);
-    }
-    for (lld i = 0; i <= files_c; i++)
-    {
-        chr *res_a = calloc(strlen(all_files[i]) + 2, sizeof(chr));
-        strcat(res_a, "/");
-        strcat(res_a, all_files[i]);
-        if (strcmp(res_a, bb) == 0)
+        if (strcmp(another, all_files[j]) == 0)
         {
-            return i;
+            return j;
         }
-        free(res_a);
+        j++;
     }
     return -1;
 }
 
 lld check_folder(chr a[])
 {
-
-    for (lld i = 0; i <= fldr_i; ++i)
+    lld i = 0;
+    char *chrptr = a;
+    ++chrptr;
+    while (i <= fldr_i)
     {
-        chr *res_a = calloc(strlen(Folder[i]) + 1 + strlen("/"), sizeof(chr));
-        res_a[0] = '/';
-        strcat(res_a, Folder[i]);
-
-        // printf("%d %s %s %d %s %d\n", strlen(all_files[i]), all_files[i], res_a, strlen(res_a), a, strlen(a));
-        bool flag = strcmp(res_a, a) == 0;
-        if (flag)
+        if (strcmp(Folder[i], chrptr) == 0)
         {
-            printf("\n\n folder %s \n\n", a);
             return i;
         }
-        free(res_a);
+        ++i;
     }
     return -1;
 }
@@ -819,234 +835,126 @@ static lld file_getattr(const chr *path_x, struct stat *st)
         path[i] = 0;
     }
     st->st_atime = st->st_mtime = time(NULL);
-
-    // bruh
-
-    strcpy(path, path_x);
-    if (strlen(path_x))
+    lld j = 0;
+    while (path_x[j] != '\0')
     {
-        printf("The path is %s", path_x);
+        path[j] = path_x[j];
+        j++;
     }
 
-    if (strcmp(path, "/") == 0)
+    if (strcmp(path, "/") == 0 || check_folder(path) != -1)
     {
         st->st_nlink = 2;
         st->st_mode = S_IFDIR | 0755;
         return 0;
     }
-    else if (check_folder(path) != -1)
-    {
-        st->st_mode = S_IFDIR | 0755;
-        st->st_nlink = 2;
-        return 0;
-    }
-    else if (check_file(path) != -1)
+    if (check_file(path) != -1)
     {
         st->st_mode = S_IFREG | 0644;
-        st->st_size = 1024;
+        st->st_size = 1500;
         st->st_nlink = 1;
         return 0;
     }
-    else
-    {
-        return -ENOENT;
-    }
-    return 0;
+
+    return -ENOENT;
 }
 
 static lld file_readdir(const chr *path_x, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
-    printf("The list of files on path = %s\n", path_x);
-
+    filler(buffer, ".", NULL, 0);
+    filler(buffer, "..", NULL, 0);
     chr path[300];
     for (lld i = 0; i < 300; ++i)
     {
         path[i] = 0;
     }
 
-    strcpy(path, path_x);
-
-    filler(buffer, ".", NULL, 0);  // Current Directory
-    filler(buffer, "..", NULL, 0); // Parent Directory
-
-    if (path[0] == '/') // If the user is trying to show the files/directories of the root directory show the following
+    lld j = 0;
+    while (path_x[j] != '\0')
     {
-        for (lld i = 0; i <= fldr_i; ++i)
+        path[j] = path_x[j];
+        ++j;
+    }
+
+    bool isRoot = path[0] == '/';
+    if (isRoot)
+    {
+
+        lld j = 0;
+        while (j <= fldr_i)
         {
-            filler(buffer, Folder[i], NULL, 0);
+            filler(buffer, Folder[j], NULL, 0);
+            ++j;
         }
-        for (lld i = 0; i <= files_r_i; ++i)
+
+        j = 0;
+        while (j <= files_r_i)
         {
-            filler(buffer, Files_in_r[i], NULL, 0);
+            filler(buffer, Files_in_r[j], NULL, 0);
+            ++j;
         }
     }
     else
     {
         lld dir_loc = check_folder(path);
-        for (lld i = 0; i < curr_ind[dir_loc]; ++i)
+
+        lld j = 0;
+        while (j < curr_ind[dir_loc])
         {
-            filler(buffer, Files_in_d[dir_loc][i], NULL, 0);
+            filler(buffer, Files_in_d[dir_loc][j], NULL, 0);
+            ++j;
         }
     }
 
     return 0;
 }
 
-static lld file_read(const chr *path_x, chr *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
-{
-    chr path[300];
-    for (lld i = 0; i < 300; ++i)
-    {
-        path[i] = 0;
-    }
-    strcpy(path, path_x);
-    lld cntpnt = 0;
-    chr read_sub[300];
-    lld s_dash_pos = -1;
-
-    for (lld i = 0; i < strlen(path); ++i)
-    {
-        if (path[i] == '/')
-        {
-            ++cntpnt;
-            if (cntpnt == 2)
-            {
-                s_dash_pos = i;
-                break;
-            }
-        }
-    }
-    if (cntpnt == 1)
-    {
-        for (lld i = 0; i <= files_r_i; ++i)
-        {
-            int req_size = strlen(Files_in_r[i]) + strlen("/") + 1;
-            chr *res_a = calloc(strlen(Files_in_r[i]) + strlen("/") + 1, sizeof(chr));
-            int strlen_a = strlen(res_a);
-            for (int i = 0; i < strlen_a; ++i)
-            {
-                res_a[i] = 0;
-            }
-            strcat(res_a, "/");
-            strcat(res_a, Files_in_r[i]);
-            bool flag = strcmp(res_a, path) == 0;
-            if (flag)
-            {
-                strcpy(read_sub, sub_in_r[i]);
-                printf("%s", read_sub);
-                break;
-            }
-            free(res_a);
-        }
-    }
-    else
-    {
-        chr _fldr[300];
-        chr _file[300];
-        for (lld i = 0; i < 300; ++i)
-        {
-            _file[i] = 0;
-        }
-        for (lld i = 0; i < 300; ++i)
-        {
-            _fldr[i] = 0;
-        }
-        for (lld i = 0; i < s_dash_pos; ++i)
-        {
-            _fldr[i] = path[i];
-        }
-        for (lld i = s_dash_pos + 1; i < strlen(path); ++i)
-        {
-            _file[i - s_dash_pos - 1] = path[i];
-        }
-        lld dir_loc = check_folder(_fldr);
-
-        lld file_loc = file_in_dir(_file, dir_loc);
-        strcpy(read_sub, sub_in_d[dir_loc][file_loc]);
-        printf("\n%s %s %d\n", _file, _fldr, s_dash_pos);
-    }
-    if (strlen(read_sub))
-    {
-        printf("The subject is %s\n", read_sub);
-    }
-    get_body(read_sub);
-    memcpy(buffer, _BODY, 4096);
-
-    return strlen(_BODY);
-}
-
 static lld file_write(const chr *path_x, const chr *buffer, size_t size, off_t offset, struct fuse_file_info *info)
 {
     chr path[300];
-    memset(path, 0, 300);
     for (lld i = 0; i < 300; ++i)
     {
         path[i] = 0;
     }
-    strcpy(path, path_x);
+    lld j = 0;
+    while (path[j] != '\0')
+    {
+        path[j] = path_x[j];
+        ++j;
+    }
     lld cntpnt = 0;
     chr read_sub[300];
-    lld s_dash_pos = -1;
-    lld strlenpath = strlen(path);
-    for (lld i = 0; i < strlenpath; i++)
+    chr *charpointer = a + 1;
+    chr *token1 = strtok(charpointer, "/");
+    chr *theta1 = token1;
+    token1 = strtok(NULL, "/");
+    chr *theta2 = token1;
+    if (theta2 == NULL)
     {
-        if (path[i] == '/')
+        lld j=0;
+        while(j<=files_r_i)
         {
-            cntpnt++;
-            if (cntpnt == 2)
+            if(strcmp(theta1,Files_in_r[j])==0)
             {
-                s_dash_pos = i;
                 break;
             }
+            j++;
+        }
+        if(j>files_r_i)
+        {
+            return -1;
+        }
+        lld k=0;
+        while(sub_in_r[j][k]!='\0')
+        {
+            read_sub[k]=sub_in_r[j][k];
+            k++;
         }
     }
-    if (cntpnt == 1)
-    {
-        for (lld i = 0; i <= files_r_i; i++)
-        {
-            chr *res_a = calloc(strlen(Files_in_r[i]) + 2, sizeof(chr));
-            strcat(res_a, "/");
-            strcat(res_a, Files_in_r[i]);
-            bool flag = strcmp(res_a, path) == 0;
-            if (flag)
-            {
-                strcpy(read_sub, sub_in_r[i]);
-                printf("%s", read_sub);
-                break;
-            }
-            free(res_a);
-        }
-    }
-    else
-    {
-        chr _fldr[300], _file[300];
-        memset(_file, 0, 300);
-        for (lld i = 0; i < 300; ++i)
-        {
-            _file[i] = 0;
-        }
-        memset(_fldr, 0, 300);
-        for (lld i = 0; i < 300; ++i)
-        {
-            _fldr[i] = 0;
-        }
-        for (lld i = 0; i < s_dash_pos; i++)
-        {
-            _fldr[i] = path[i];
-        }
-        for (lld i = s_dash_pos + 1; i < strlen(path); i++)
-        {
-            _file[i - s_dash_pos - 1] = path[i];
-        }
-        lld dir_loc = check_folder(_fldr);
+    else{
 
-        lld file_loc = file_in_dir(_file, dir_loc);
-        strcpy(read_sub, sub_in_d[dir_loc][file_loc]);
-        if (file_loc == -1)
-        {
-            printf("File not found");
-        }
     }
+    
     get_body(read_sub);
     delete_sub(read_sub);
     if (size > 1000)
@@ -1054,9 +962,9 @@ static lld file_write(const chr *path_x, const chr *buffer, size_t size, off_t o
         printf("\n\nWARNING: file size exceeded!!\n\n");
         exit(-1);
     }
-    chr BODY_COPY[1024];
-    memset(BODY_COPY, 0, 1024);
-    for (lld i = 0; i < 1024; ++i)
+    chr BODY_COPY[1500];
+    memset(BODY_COPY, 0, 1500);
+    for (lld i = 0; i < 1500; ++i)
     {
         BODY_COPY[i] = 0;
     }
@@ -1069,104 +977,7 @@ static lld file_write(const chr *path_x, const chr *buffer, size_t size, off_t o
 
 static lld file_truncate(const chr *path_x, off_t size)
 {
-    int path_xlen = strlen(path_x);
-    chr path[path_xlen];
-    for (lld i = 0; i < path_xlen; ++i)
-    {
-        path[i] = 0;
-    }
-    strcpy(path, path_x);
-    lld cntpnt = 0;
-    chr read_sub[300];
-    lld s_dash_pos = -1;
-    lld strlenpath_ = strlen(path);
-    for (lld i = 0; i < strlenpath_; i++)
-    {
-        if (path[i] == '/')
-        {
-            cntpnt += 1;
-            if (cntpnt == 2)
-            {
-                s_dash_pos = i;
-                break;
-            }
-        }
-    }
-    if (cntpnt == 1)
-    {
-        for (lld i = 0; i <= files_r_i; i++)
-        {
-            chr *res_a = calloc(strlen(Files_in_r[i]) + 2, sizeof(chr));
-            strcat(res_a, "/");
-            strcat(res_a, Files_in_r[i]);
-            bool check = strcmp(res_a, path) == 0;
-            if (check)
-            {
-                strcpy(read_sub, sub_in_r[i]);
-                printf("%s", read_sub);
-                break;
-            }
-            free(res_a);
-        }
-    }
-    else
-    {
-        chr _fldr[300], _file[300];
-        memset(_file, 0, 300);
-        for (lld i = 0; i < 300; ++i)
-        {
-            _file[i] = 0;
-        }
-        memset(_fldr, 0, 300);
-        for (lld i = 0; i < 300; ++i)
-        {
-            _fldr[i] = 0;
-        }
-        for (lld i = 0; i < s_dash_pos; i++)
-        {
-            _fldr[i] = path[i];
-        }
-        for (lld i = s_dash_pos + 1; i < strlen(path); i++)
-        {
-            _file[i - s_dash_pos - 1] = path[i];
-        }
-        lld dir_loc = check_folder(_fldr);
-
-        lld file_loc = file_in_dir(_file, dir_loc);
-        strcpy(read_sub, sub_in_d[dir_loc][file_loc]);
-        if (file_loc != -1)
-        {
-
-            printf("file is %s", _file);
-        }
-        else
-        {
-            printf("file not found");
-        }
-    }
-    get_body(read_sub);
-    delete_sub(read_sub);
-    if (size > 1024)
-    {
-        printf("\n\nWARNING: file size exceeded!!\n\n");
-        exit(-1);
-    }
-    chr BODY_COPY[1024];
-    for (lld i = 0; i < 1024; i++)
-    {
-        BODY_COPY[i] = '\0';
-    }
-
-    chr *x = trim(_BODY);
-    printf("This is what we read %s\n", _BODY);
-    bool xlen = strlen(x);
-    if (size < xlen)
-    {
-
-        *(x + size) = 0;
-    }
-    strcpy(BODY_COPY, x);
-    send_mail(read_sub, BODY_COPY);
+    
 
     return 0;
 }
@@ -1175,7 +986,7 @@ int debug(int x)
     printf("The debugged integer is %d", x);
 }
 static struct fuse_operations operations = {
-    .read = file_read,
+
     .getattr = file_getattr,
     .write = file_write,
     .truncate = file_truncate,
@@ -1284,7 +1095,7 @@ gcc main.c `pkg-config fuse --cflags --libs` -lcurl
 
 ls
 cat bro.txt
-echo "hello" > bro.txt
+echo "h" > rand.txt
 cd folder
 cd ..
 ll
