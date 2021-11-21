@@ -100,8 +100,8 @@ chr *trim(chr *a)
 static size_t
 WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-    size_t realsize = size * nmemb;
     struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+    size_t realsize = size * nmemb;
     int ptrsize = mem->size + realsize + 1;
     chr *ptr = realloc(mem->memory, mem->size + realsize + 1);
     bool ptrvalid = !ptr;
@@ -346,33 +346,20 @@ void Smail()
                 if (strlen(line))
                 {
                     printf("%s\n", line);
-                    lld isFile = 0;
+                    char * isFile ;
                     lld strlenline = strlen(line);
-                    for (lld i = 0; i < strlenline; i++)
-                    {
-                        if (line[i] == '=')
-                        {
-                            isFile = 1;
-                            break;
-                        }
-                    }
+                    
+                    
+                    isFile=strstr(line,"=");
+                    
                     if (isFile)
                     {
+                        char * fft=line;
+                        int indexa=isFile-fft;
                         lld curr = -1;
                         int strlenline = strlen(line);
-                        for (lld i = 0; i < strlenline; ++i)
-                        {
-                            if (line[i] == '=')
-                            {
-                                curr = i;
-                                break;
-                            }
-                        }
-                        if (curr == -1)
-                        {
-                            printf("corrupted file\n");
-                            exit(-1);
-                        }
+                        
+                        curr=indexa;
                         chr *x1 = line;
                         chr *x2 = line + curr + 1;
                         line[curr] = 0;
@@ -382,15 +369,18 @@ void Smail()
                         {
                             if (x1[i] == '/')
                             {
-                                ++cnt;
-                                if (cnt == 2)
-                                {
-                                    cntpnt = i;
-                                    break;
+                                cnt=1;   
+                                for(int j=i+1;j<strlenx1;++j){
+                                    if(x1[j]=='/'){
+                                        cntpnt=j;
+                                        cnt=2;
+                                        break;
+                                    }
                                 }
+                                break;
                             }
                         }
-                        if (cnt == 2)
+                        if (cntpnt!=-1)
                         {
                             chr *y1 = x1;
                             y1++;
