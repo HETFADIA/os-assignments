@@ -97,27 +97,21 @@ chr *trim(chr *a)
     return a;
 }
 
-static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
+static size_t
+WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-    size_t realsize;
-    realsize = size;
-    realsize *= nmemb;
+    size_t realsize = size * nmemb;
     struct MemoryStruct *mem = (struct MemoryStruct *)userp;
 
-    chr *ptr = realloc(mem->memory, mem->size + realsize + 1);
-    bool _ptr = !ptr;
-    if (_ptr)
-    {
+    char *ptr = realloc(mem->memory, mem->size + realsize + 1);
+    if (!ptr){
         printf("not enough memory (realloc returned NULL)\n");
         return 0;
     }
-    else
-    {
-        mem->memory = ptr;
-        memcpy(&(mem->memory[mem->size]), contents, realsize);
-        mem->memory[mem->size] = 0;
-    }
+    mem->memory = ptr;
+    memcpy(&(mem->memory[mem->size]), contents, realsize);
     mem->size += realsize;
+    mem->memory[mem->size] = 0;
 
     return realsize;
 }
@@ -129,7 +123,7 @@ lld searchbysubject(chr a[])
     struct MemoryStruct chunk;
     chunk.memory = malloc(1);
     chunk.size = 0;
-    char uid_search_sub = "UID SEARCH SUBJECT \"";
+    char *uid_search_sub = "UID SEARCH SUBJECT \"";
     chr *res_s = calloc(strlen(a) + 21 + 1 + 1, sizeof(chr));
     strcat(res_s, uid_search_sub);
     strcat(res_s, a);
@@ -159,6 +153,7 @@ lld searchbysubject(chr a[])
     res = curl_easy_perform(curl_handle);
     val = -1;
     bool _res = res != CURLE_OK;
+    printf("%d",_res);
     if (_res)
     {
         printf("The curl did not get executed due to some error\n");
@@ -168,6 +163,7 @@ lld searchbysubject(chr a[])
     else
     {
         chr *p = chunk.memory;
+        printf("%s",p);
         while (*p)
         {
             bool _isdigit = isdigit(*p);
@@ -578,7 +574,7 @@ void delete_sub(chr a[])
     sprintf(number, "%d", UID);
 
     chr *res_s = calloc(strlen(number) + 1 + strlen("UID STORE ") + 19, sizeof(chr));
-    char uid_st = "UID STORE ";
+    char *uid_st = "UID STORE ";
     strcat(res_s, uid_st);
     strcat(res_s, number);
     strcat(res_s, " +FLAGS (\\Deleted)");
@@ -691,20 +687,20 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp)
     }
     return 0;
 }
-char * email_name=NULL;
-char * url_name=NULL;
-void send_mail(chr SS_sub[], chr SS_text[])
+char *email_name = NULL;
+char *url_name = NULL;
+void send_mail(chr file_sub[], chr file_text[])
 {
     CURL *curl;
     CURLcode res;
     res = CURLE_OK;
-    chr *res_s = calloc(strlen(SS_sub) + 10, sizeof(chr));
-    chr start = "Subject: ";
+    chr *res_s = calloc(strlen(file_sub) + 10, sizeof(chr));
+    chr *start = "Subject: ";
     strcat(res_s, start);
-    strcat(res_s, SS_sub);
+    strcat(res_s, file_sub);
     strcpy(sub_, res_s);
-    strcpy(text, SS_text);
-    printf("Here we are sending mail with subject %s and body %s\n", SS_sub, SS_text);
+    strcpy(text, file_text);
+    printf("Here we are sending mail with subject %s and body %s\n", file_sub, file_text);
     struct curl_slist *recipients = NULL;
     struct upload_status upload_ctx;
 
@@ -801,7 +797,7 @@ lld check_folder(chr a[])
     for (lld i = 0; i <= fldr_i; ++i)
     {
         chr *res_a = calloc(strlen(Folder[i]) + 1 + strlen("/"), sizeof(chr));
-        res_a[0] = "/";
+        res_a[0] = '/';
         strcat(res_a, Folder[i]);
 
         // printf("%d %s %s %d %s %d\n", strlen(all_files[i]), all_files[i], res_a, strlen(res_a), a, strlen(a));
@@ -816,7 +812,7 @@ lld check_folder(chr a[])
     return -1;
 }
 
-static lld SS_getattr(const chr *path_x, struct stat *st)
+static lld file_getattr(const chr *path_x, struct stat *st)
 {
     st->st_uid = getuid();
     st->st_gid = getgid();
@@ -861,7 +857,7 @@ static lld SS_getattr(const chr *path_x, struct stat *st)
     return 0;
 }
 
-static lld SS_readdir(const chr *path_x, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+static lld file_readdir(const chr *path_x, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
     printf("The list of files on path = %s\n", path_x);
 
@@ -899,7 +895,7 @@ static lld SS_readdir(const chr *path_x, void *buffer, fuse_fill_dir_t filler, o
     return 0;
 }
 
-static lld SS_read(const chr *path_x, chr *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
+static lld file_read(const chr *path_x, chr *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     chr path[300];
     for (lld i = 0; i < 300; ++i)
@@ -982,7 +978,7 @@ static lld SS_read(const chr *path_x, chr *buffer, size_t size, off_t offset, st
     return strlen(_BODY);
 }
 
-static lld SS_write(const chr *path_x, const chr *buffer, size_t size, off_t offset, struct fuse_file_info *info)
+static lld file_write(const chr *path_x, const chr *buffer, size_t size, off_t offset, struct fuse_file_info *info)
 {
     chr path[300];
     memset(path, 0, 300);
@@ -1074,9 +1070,9 @@ static lld SS_write(const chr *path_x, const chr *buffer, size_t size, off_t off
     return size;
 }
 
-static lld SS_truncate(const chr *path_x, off_t size)
+static lld file_truncate(const chr *path_x, off_t size)
 {
-    int path_xlen=strlen(path_x);
+    int path_xlen = strlen(path_x);
     chr path[path_xlen];
     for (lld i = 0; i < path_xlen; ++i)
     {
@@ -1182,11 +1178,11 @@ int debug(int x)
     printf("The debugged integer is %d", x);
 }
 static struct fuse_operations operations = {
-    .read = SS_read,
-    .getattr = SS_getattr,
-    .write = SS_write,
-    .truncate = SS_truncate,
-    .readdir = SS_readdir,
+    .read = file_read,
+    .getattr = file_getattr,
+    .write = file_write,
+    .truncate = file_truncate,
+    .readdir = file_readdir,
 };
 
 lld main(lld argc, chr **argv)
@@ -1216,7 +1212,7 @@ lld main(lld argc, chr **argv)
         printf("Please enter your imap server\n");
         exit(-1);
     }
-    
+
     printf("imap is %s\n", imap);
     memset(buf, 0, sizeof(buf));
     for (lld i = 0; i < buflen; ++i)
@@ -1231,10 +1227,11 @@ lld main(lld argc, chr **argv)
         printf("Please enter your smtp server\n");
         exit(-1);
     }
-    else{
-        int length=strlen(smtp);
-        url_name=(char*)malloc(length+1);
-        strcpy(url_name,smtp);
+    else
+    {
+        int length = strlen(smtp);
+        url_name = (char *)malloc(length + 1);
+        strcpy(url_name, smtp);
     }
     printf("smtp is %s", smtp);
     memset(buf, 0, sizeof(buf));
@@ -1260,9 +1257,10 @@ lld main(lld argc, chr **argv)
         printf("Please enter your non empty username\n");
         exit(-1);
     }
-    else{
-        email_name=(char *)malloc(strlen(user)+1);
-        strcpy(email_name,user);
+    else
+    {
+        email_name = (char *)malloc(strlen(user) + 1);
+        strcpy(email_name, user);
     }
     printf("user is %s\n", user);
     memset(buf, 0, sizeof(buf));
@@ -1284,7 +1282,7 @@ lld main(lld argc, chr **argv)
     return fuse_main(argc, argv, &operations, NULL);
 }
 /*
-gcc fs.c `pkg-config fuse --cflags --libs` -lcurl
+gcc main.c `pkg-config fuse --cflags --libs` -lcurl
 ./a.out  -f store
 
 ls

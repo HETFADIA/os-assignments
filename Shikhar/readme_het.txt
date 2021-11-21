@@ -16,7 +16,15 @@ Our program takes credentials of the email, server ,password etc from a file nam
 
 2. A description of how the program works:
 
-This 
+Here in our program the commands gets executed as the user writes commands in the terminal.
+For example as the user writes cat hi.txt the SS_read function will automatically get executed.
+Thus the contents of the file will be printed in the terminal.
+Similary when the user writes echo "hello" > hi.txt the SS_write function will automatically get executed.
+First the hi.txt will be cleared and then the string will be copied in the file.
+
+The mails gets stored in the inbox of the email. So whenever the user executes the commnads the content is taken from the email.
+
+
 
 3. How to compile and run this program:
 
