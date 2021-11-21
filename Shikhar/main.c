@@ -102,16 +102,23 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
     size_t realsize = size * nmemb;
     struct MemoryStruct *mem = (struct MemoryStruct *)userp;
-
-    char *ptr = realloc(mem->memory, mem->size + realsize + 1);
-    if (!ptr){
+    int ptrsize = mem->size + realsize + 1;
+    chr *ptr = realloc(mem->memory, mem->size + realsize + 1);
+    bool ptrvalid = !ptr;
+    if (ptrvalid)
+    {
         printf("not enough memory (realloc returned NULL)\n");
         return 0;
     }
-    mem->memory = ptr;
+    else
+    {
+        mem->memory = ptr;
+    }
     memcpy(&(mem->memory[mem->size]), contents, realsize);
     mem->size += realsize;
-    mem->memory[mem->size] = 0;
+    int lastindex = mem->size;
+    mem->memory[lastindex] = 0;
+    printf("The mem memory is %s\n", mem->memory);
 
     return realsize;
 }
@@ -153,7 +160,7 @@ lld searchbysubject(chr a[])
     res = curl_easy_perform(curl_handle);
     val = -1;
     bool _res = res != CURLE_OK;
-    printf("%d",_res);
+    printf("%d", _res);
     if (_res)
     {
         printf("The curl did not get executed due to some error\n");
@@ -163,7 +170,7 @@ lld searchbysubject(chr a[])
     else
     {
         chr *p = chunk.memory;
-        printf("%s",p);
+        printf("%s", p);
         while (*p)
         {
             bool _isdigit = isdigit(*p);
@@ -710,8 +717,8 @@ void send_mail(chr file_sub[], chr file_text[])
     if (curl)
     {
         printf("logging in used password etc\n");
-        curl_easy_setopt(curl, CURLOPT_URL, url_name);
-        recipients = curl_slist_append(recipients, email_name);
+        curl_easy_setopt(curl, CURLOPT_URL, "smtps://smtp.gmail.com");
+        recipients = curl_slist_append(recipients, "testhailaude@gmail.com");
         if (strlen(user) == 0)
         {
             printf("No user\n");
