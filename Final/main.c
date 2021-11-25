@@ -335,8 +335,6 @@ void sendemail(chr sub[], chr text[])
         printf("user is %s\n", user);
         recipients = curl_slist_append(recipients, "cluetest29@gmail.com");
         curl_easy_setopt(curl, CURLOPT_USERNAME, "cluetest29@gmail.com");
-        // recipients = curl_slist_append(recipients, "testhailaude@gmail.com");
-        // curl_easy_setopt(curl, CURLOPT_USERNAME, "testhailaude@gmail.com");
         if (strlen(password) > 0)
         {
             curl_easy_setopt(curl, CURLOPT_PASSWORD, password);
