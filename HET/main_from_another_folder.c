@@ -931,30 +931,30 @@ static lld file_write(const chr *path_x, const chr *buffer, size_t size, off_t o
     chr *theta2 = token1;
     if (theta2 == NULL)
     {
-        lld j=0;
-        while(j<=files_r_i)
+        lld j = 0;
+        while (j <= files_r_i)
         {
-            if(strcmp(theta1,Files_in_r[j])==0)
+            if (strcmp(theta1, Files_in_r[j]) == 0)
             {
                 break;
             }
             j++;
         }
-        if(j>files_r_i)
+        if (j > files_r_i)
         {
             return -1;
         }
-        lld k=0;
-        while(sub_in_r[j][k]!='\0')
+        lld k = 0;
+        while (sub_in_r[j][k] != '\0')
         {
-            read_sub[k]=sub_in_r[j][k];
+            read_sub[k] = sub_in_r[j][k];
             k++;
         }
     }
-    else{
-
+    else
+    {
     }
-    
+
     get_body(read_sub);
     delete_sub(read_sub);
     if (size > 1000)
@@ -977,7 +977,6 @@ static lld file_write(const chr *path_x, const chr *buffer, size_t size, off_t o
 
 static lld file_truncate(const chr *path_x, off_t size)
 {
-    
 
     return 0;
 }

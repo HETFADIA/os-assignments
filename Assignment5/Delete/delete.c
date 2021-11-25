@@ -216,15 +216,6 @@ void send_mail(char sub[], char text[])
     char *res_s = calloc(strlen(sub) + 10, sizeof(char));
     strcat(res_s, "Subject: ");
     strcat(res_s, sub);
-
-    // char *payload_text_1[] = {
-    // res_s,
-    // "\r\n",
-    // text,
-    // "\r\n",
-    // NULL
-    // };
-    // payload_text = payload_text_1;
     CURL *curl;
     CURLcode res = CURLE_OK;
     struct curl_slist *recipients = NULL;
@@ -253,56 +244,10 @@ void send_mail(char sub[], char text[])
     }
 }
 
-// static int SS_getattr(const char *path, struct stat *st){
-//     st->st_uid = getuid();
-// 	st->st_gid = getgid();
-// 	st->st_atime = time(NULL);
-// 	st->st_mtime = time(NULL);
-
-//     path++; // removing "/" from the path
-// 	int isFile = 0, isFldr = 0;
-// 	for(int i = 0; i <= var_file_len; i++){
-// 		if (strcmp(path, SS_filelist[i]) == 0){
-// 			isFile = 1;
-//             break;
-//         }
-//     }
-
-//     for(int i = 0; i <= var_fldr_len; i++){
-// 		if (strcmp(path, SS_fldrlist[i]) == 0){
-// 			isFldr = 1;
-//             break;
-//         }
-//     }
-
-//     if(strcmp( path, "/" ) == 0 || isFldr){
-//         st->st_mode = S_IFDIR | 0755;
-// 		st->st_nlink = 2;
-//     }
-//     else if(isFile){
-//         st->st_mode = S_IFREG | 0644;
-// 		st->st_nlink = 1;
-// 		st->st_size = 1024;
-//     }
-//     else{
-//         return -ENOENT;
-//     }
-//     return 0;
-// }
-
-// static struct fuse_operations operations = {
-//     .getattr	= do_getattr,
-//     .readdir	= do_readdir,
-//     .read		= do_read,
-//     .mkdir		= do_mkdir,
-//     .mknod		= do_mknod,
-//     .write		= do_write,
-// };
-
 int main(int argc, char **argv)
 {
     /*
-    gcc shikhar.c `pkg-config fuse --cflags --libs` -lcurl
+    gcc delete.c `pkg-config fuse --cflags --libs` -lcurl
     ./a.out  store configure.txt
 
     */
@@ -347,8 +292,6 @@ int main(int argc, char **argv)
 
     printf("\n------------------------------\n");
     printf("%s", pswd);
-    delete_sub("1");
-    // send_mail("del", "Starboy\n I want a ");
-
-    // return fuse_main(argc-1, argv, &operations, NULL);
+    // delete_sub("1");
+    send_mail("del", "Starboy\n I want a ");
 }
