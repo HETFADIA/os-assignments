@@ -112,7 +112,7 @@ lld searchbysubject(chr a[])
     return val;
 }
 
-void Smail()
+void init()
 {
     lld UID = searchbysubject("IMP");
     CURL *curl_handle;
@@ -180,7 +180,7 @@ void Smail()
     curl_global_cleanup();
 }
 
-void delete_sub(chr a[])
+void delete_mail_by_subject(chr a[])
 {
     lld UID = searchbysubject(a);
     if (UID == -1)
@@ -309,7 +309,7 @@ static size_t information_source(void *pointer, size_t size, size_t nmemb, void 
 }
 chr *email_name = NULL;
 chr *url_name = NULL;
-void send_mail(chr sub[], chr text[])
+void sendemail(chr sub[], chr text[])
 {
     __result = calloc(strlen(sub) + 10, sizeof(chr));
     strcat(__result, "Subject: ");
@@ -456,6 +456,6 @@ lld main(lld argc, chr **argv)
     fclose(f);
 
     printf("%s", password);
-    // delete_sub("security alert");
-    send_mail("This is subject", "This is body");
+    // delete_mail_by_subject("security alert");
+    sendemail("This is subject", "This is body");
 }
