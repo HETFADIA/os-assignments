@@ -3,4 +3,3 @@ smtps://smtp.gmail.com
 993
 995
 cluetest29@gmail.com
-newtest&29
